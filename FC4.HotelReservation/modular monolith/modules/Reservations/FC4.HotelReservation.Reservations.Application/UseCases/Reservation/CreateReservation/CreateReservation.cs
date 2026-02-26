@@ -39,7 +39,7 @@ public class CreateReservation(
             inventory.ReserveRooms(request.RoomQuantity);
             await roomTypeInventoryRepository.UpdateAsync(inventory, cancellationToken);
         }
-
+    
         await unitOfWork.CommitAsync(cancellationToken);
         return new CreateReservationOutput(reservation.Id);
     }
