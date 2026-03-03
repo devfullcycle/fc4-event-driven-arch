@@ -21,9 +21,10 @@ public class CreateReservation(
             ?? throw new InvalidOperationException("Guest not found");
         
         var period = new DateRange(request.StartDate, request.EndDate);
+        // Lock pessimista: bloquear os registros de disponibilidade até que a transação seja comitada
         var inventories = await roomTypeInventoryRepository.GetInventoryForPeriodAsync(
             request.HotelId, request.RoomTypeId, period, cancellationToken);
-
+        
         if (!HasSufficientInventory(inventories, period, request.RoomQuantity))
         {
             throw new InvalidOperationException("Not enough rooms available for the requested period");
