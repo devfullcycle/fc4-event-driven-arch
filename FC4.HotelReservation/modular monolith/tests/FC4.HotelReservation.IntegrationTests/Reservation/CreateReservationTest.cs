@@ -96,7 +96,7 @@ public class CreateReservationTest(WebApiFixture fixture) : IAsyncDisposable
         payment.Amount.Value.Should().Be(expectedTotalAmount);
         payment.ProcessedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(1));
     }
-
+    
     [Fact]
     public async Task CreateReservation_WithInsufficientInventory_ShouldReturnBadRequest()
     {
@@ -140,6 +140,79 @@ public class CreateReservationTest(WebApiFixture fixture) : IAsyncDisposable
         var inventory = await fixture.GetRoomTypeInventoryAsync(hotel.Id, roomType.Id, startDate);
         inventory.Should().NotBeNull();
         inventory.TotalReserved.Should().Be(0);
+    }
+    
+    [Fact]
+    public async Task CreateReservation_WithConcurrentRequests_OnlyOneShouldSucceed()
+    {
+        // Arrange
+        var hotel = await fixture.CreateHotelInDatabaseAsync();
+        var guest = await fixture.CreateGuestInDatabaseAsync();
+        var roomType = await fixture.CreateRoomTypeInDatabaseAsync();
+        var startDate = DateTime.Today.AddDays(10);
+        var endDate = startDate.AddDays(2);
+        const int totalInventory = 1;
+        const int roomQuantity = 1;
+        const int concurrentRequests = 4;
+
+        var dates = new DateRange(startDate, endDate).GetDates().ToList();
+        foreach (var date in dates)
+        {
+            await fixture.CreateRoomTypeInventoryInDatabaseAsync(
+                ARoomTypeInventory()
+                    .WithHotelId(hotel.Id)
+                    .WithRoomTypeId(roomType.Id)
+                    .WithDate(date)
+                    .WithTotalInventory(totalInventory)
+                    .Build());
+
+            await fixture.CreateRoomTypeRateInDatabaseAsync(
+                ARoomTypeRate()
+                    .WithHotelId(hotel.Id)
+                    .WithRoomTypeId(roomType.Id)
+                    .WithDate(date)
+                    .WithRate(new Catalog.Domain.ValueObjects.Money(100m, "USD"))
+                    .Build());
+        }
+
+        var input = ACreateReservationInput()
+            .WithHotelId(hotel.Id)
+            .WithRoomTypeId(roomType.Id)
+            .WithGuestId(guest.Id)
+            .WithStartDate(startDate)
+            .WithEndDate(endDate)
+            .WithRoomQuantity(roomQuantity)
+            .Build();
+
+        var barrier = new Barrier(concurrentRequests);
+        var tasks = Enumerable.Range(0, concurrentRequests).Select(_ => Task.Run(async () =>
+        {
+            using var client = fixture.CreateClient();
+            barrier.SignalAndWait();
+            return await client.PostAsJsonAsync("/v1/reservations", input);
+        })).ToList();
+        
+        var responses = await Task.WhenAll(tasks);
+
+        // Assert – exactly one request succeeded
+        var successResponses = responses.Where(r => r.StatusCode == HttpStatusCode.Created).ToList();
+        var failureResponses = responses.Where(r => r.StatusCode != HttpStatusCode.Created).ToList();
+
+        successResponses.Should().HaveCount(1, "only one reservation should succeed when there is a single room available");
+        failureResponses.Should().HaveCount(concurrentRequests - 1);
+        failureResponses.Should().OnlyContain(r =>
+            r.StatusCode == HttpStatusCode.UnprocessableEntity ||
+            r.StatusCode == HttpStatusCode.Conflict);
+
+        // Verify only one reservation exists
+        var reservations = await fixture.GetReservationsByGuestIdAsync(guest.Id);
+        reservations.Should().HaveCount(1);
+
+        // Verify inventory reflects exactly one reservation
+        var period = new DateRange(startDate, endDate);
+        var updatedInventories = await fixture.GetRoomTypeInventoriesAsync(hotel.Id, roomType.Id, period);
+        updatedInventories.Should().OnlyContain(i => i.TotalReserved == roomQuantity);
+        updatedInventories.Should().OnlyContain(i => i.AvailableInventory == totalInventory - roomQuantity);
     }
 
     public async ValueTask DisposeAsync()
