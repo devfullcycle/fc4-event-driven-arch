@@ -20,8 +20,7 @@ public class RoomTypeInventoryRepository(HotelDbContext context) : IRoomTypeInve
         var sql = $@"SELECT * FROM room_type_inventory
                     WHERE hotel_id = {{0}}
                       AND room_type_id = {{1}}
-                      AND date IN ({datesLiteral})
-                    FOR UPDATE";
+                      AND date IN ({datesLiteral})";
         
         return await context.RoomTypeInventories
             .FromSqlRaw(sql, hotelId, roomTypeId)
