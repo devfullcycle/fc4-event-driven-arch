@@ -1,13 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
-using FC4.HotelReservation.Reservations.Application.UseCases.Reservation.Common;
+using FC4.HotelReservation.Reservations.Application.Queries.Common;
 using FluentAssertions;
 using static FC4.HotelReservation.IntegrationTests.DataBuilders.ReservationBuilder;
 
 namespace FC4.HotelReservation.IntegrationTests.Reservation;
 
 [Collection(nameof(WebApiFixture))]
-public class ListReservationsTest(WebApiFixture fixture) : IAsyncDisposable
+public class ListReservationsHandlerTest(WebApiFixture fixture) : IAsyncDisposable
 {
     private readonly HttpClient _client = fixture.CreateClient();
     
@@ -47,7 +47,7 @@ public class ListReservationsTest(WebApiFixture fixture) : IAsyncDisposable
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var reservations = await response.Content.ReadFromJsonAsync<List<ReservationOutput>>(fixture.JsonSettings);
+        var reservations = await response.Content.ReadFromJsonAsync<List<ReservationResult>>(fixture.JsonSettings);
         
         reservations.Should().NotBeNull();
         reservations.Should().HaveCount(2);

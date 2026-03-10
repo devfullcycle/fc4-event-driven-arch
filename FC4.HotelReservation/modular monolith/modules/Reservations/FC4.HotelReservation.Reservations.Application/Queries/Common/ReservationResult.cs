@@ -1,8 +1,8 @@
 using FC4.HotelReservation.Reservations.Domain.Enums;
 
-namespace FC4.HotelReservation.Reservations.Application.UseCases.Reservation.Common;
+namespace FC4.HotelReservation.Reservations.Application.Queries.Common;
 
-public record ReservationOutput(
+public record ReservationResult(
     Guid Id,
     Guid HotelId,
     Guid RoomTypeId,
@@ -14,9 +14,9 @@ public record ReservationOutput(
     string Currency,
     DateTime CreatedAt)
 {
-    public static ReservationOutput FromReservation(Domain.Entities.Reservation reservation)
+    public static ReservationResult FromReservation(Domain.Entities.Reservation reservation)
     {
-        return new ReservationOutput(
+        return new ReservationResult(
             reservation.Id,
             reservation.HotelId,
             reservation.RoomTypeId,

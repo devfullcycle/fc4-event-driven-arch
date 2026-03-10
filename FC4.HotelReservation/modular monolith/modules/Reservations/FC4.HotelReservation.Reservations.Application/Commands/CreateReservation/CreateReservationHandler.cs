@@ -4,17 +4,17 @@ using FC4.HotelReservation.Reservations.Domain.Repositories;
 using FC4.HotelReservation.Reservations.Domain.ValueObjects;
 using FC4.HotelReservation.Shared.Application;
 
-namespace FC4.HotelReservation.Reservations.Application.UseCases.Reservation.CreateReservation;
+namespace FC4.HotelReservation.Reservations.Application.Commands.CreateReservation;
 
-public class CreateReservation(
+public class CreateReservationHandler(
     IReservationRepository reservationRepository,
     IRoomTypeInventoryRepository roomTypeInventoryRepository,
     ICatalogRateService rateService,
     IReservationGuestRepository guestRepository,
-    IUnitOfWork unitOfWork) : ICreateReservation
+    IUnitOfWork unitOfWork) : ICreateReservationHandler
 {
-    public async Task<CreateReservationOutput> Handle(
-        CreateReservationInput request,
+    public async Task<CreateReservationResult> Handle(
+        CreateReservationCommand request,
         CancellationToken cancellationToken)
     {
         _ = await guestRepository.GetByIdAsync(request.GuestId, cancellationToken)
@@ -42,7 +42,7 @@ public class CreateReservation(
         }
     
         await unitOfWork.CommitAsync(cancellationToken);
-        return new CreateReservationOutput(reservation.Id);
+        return new CreateReservationResult(reservation.Id);
     }
 
     private static bool HasSufficientInventory(

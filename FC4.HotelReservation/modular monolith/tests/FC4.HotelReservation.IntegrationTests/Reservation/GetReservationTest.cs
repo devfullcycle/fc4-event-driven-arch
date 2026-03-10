@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
-using FC4.HotelReservation.Reservations.Application.UseCases.Reservation.Common;
+using FC4.HotelReservation.Reservations.Application.Queries.Common;
 using FC4.HotelReservation.Reservations.Domain.Enums;
 using FluentAssertions;
 
@@ -22,7 +22,7 @@ public class GetReservationTest(WebApiFixture fixture) : IAsyncDisposable
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        var output = await response.Content.ReadFromJsonAsync<ReservationOutput>(fixture.JsonSettings);
+        var output = await response.Content.ReadFromJsonAsync<ReservationResult>(fixture.JsonSettings);
         
         output.Should().NotBeNull();
         output.Id.Should().Be(reservation.Id);
