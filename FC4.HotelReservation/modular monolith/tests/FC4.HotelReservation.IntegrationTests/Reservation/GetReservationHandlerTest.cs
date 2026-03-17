@@ -7,7 +7,7 @@ using FluentAssertions;
 namespace FC4.HotelReservation.IntegrationTests.Reservation;
 
 [Collection(nameof(WebApiFixture))]
-public class GetReservationTest(WebApiFixture fixture) : IAsyncDisposable
+public class GetReservationHandlerTest(WebApiFixture fixture) : IAsyncDisposable
 {
     private readonly HttpClient _client = fixture.CreateClient();
     

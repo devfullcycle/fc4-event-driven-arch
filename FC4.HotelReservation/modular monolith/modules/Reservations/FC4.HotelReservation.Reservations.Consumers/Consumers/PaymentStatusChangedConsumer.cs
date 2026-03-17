@@ -1,5 +1,5 @@
 using FC4.HotelReservation.Payments.Events.IntegrationEvents;
-using FC4.HotelReservation.Reservations.Application.UseCases.Reservation.ProcessPaymentStatus;
+using FC4.HotelReservation.Reservations.Application.Commands.ProcessPaymentStatus;
 using MassTransit;
 using MediatR;
 
@@ -9,7 +9,7 @@ public class PaymentStatusChangedConsumer(IMediator mediator) : IConsumer<Paymen
 {
     public async Task Consume(ConsumeContext<PaymentStatusChanged> context)
     {
-        await mediator.Send(new ProcessPaymentStatusInput(
+        await mediator.Send(new ProcessPaymentStatusCommand(
                 context.Message.PaymentId,
                 context.Message.ReservationId,
                 (PaymentStatus)context.Message.PaymentStatus),

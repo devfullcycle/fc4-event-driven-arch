@@ -2,11 +2,11 @@ using FC4.HotelReservation.Reservations.Domain.Repositories;
 using FC4.HotelReservation.Shared.Application;
 using FC4.HotelReservation.Shared.Application.Exceptions;
 
-namespace FC4.HotelReservation.Reservations.Application.UseCases.Reservation.CancelReservation;
+namespace FC4.HotelReservation.Reservations.Application.Commands.CancelReservation;
 
-public class CancelReservation(IReservationRepository reservationRepository, IUnitOfWork unitOfWork) : ICancelReservation
+public class CancelReservationHandler(IReservationRepository reservationRepository, IUnitOfWork unitOfWork) : ICancelReservationHandler
 {
-    public async Task Handle(CancelReservationInput request, CancellationToken cancellationToken)
+    public async Task Handle(CancelReservationCommand request, CancellationToken cancellationToken)
     {
         var reservation = await reservationRepository.GetByIdAsync(request.ReservationId, cancellationToken)
                           ?? throw new NotFoundException("Reservation not found");

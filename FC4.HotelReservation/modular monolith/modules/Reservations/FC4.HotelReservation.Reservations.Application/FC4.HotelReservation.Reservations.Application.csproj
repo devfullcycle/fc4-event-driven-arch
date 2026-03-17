@@ -14,8 +14,6 @@
 
     <ItemGroup>
       <Folder Include="Commands\" />
-      <Folder Include="UseCases\" />
-      <Folder Include="UseCases\Reservation\Common\" />
     </ItemGroup>
 
 </Project>

@@ -13,14 +13,6 @@ public class ReservationRepository(HotelDbContext context) : IReservationReposit
             .FirstOrDefaultAsync(r => r.Id == reservationId, cancellationToken);
     }
 
-    public async Task<IEnumerable<Reservation>> GetByGuestIdAsync(Guid guestId, CancellationToken cancellationToken)
-    {
-        return await context.Reservations
-            .Where(r => r.GuestId == guestId)
-            .OrderByDescending(r => r.CreatedAt)
-            .ToListAsync(cancellationToken);
-    }
-
     public async Task CreateAsync(Reservation reservation, CancellationToken cancellationToken)
     {
         await context.Reservations.AddAsync(reservation, cancellationToken);

@@ -8,7 +8,7 @@ using static FC4.HotelReservation.IntegrationTests.DataBuilders.RoomTypeInventor
 namespace FC4.HotelReservation.IntegrationTests.Reservation;
 
 [Collection(nameof(WebApiFixture))]
-public class CancelReservationTest(WebApiFixture fixture) : IAsyncDisposable
+public class CancelReservationHandlerTest(WebApiFixture fixture) : IAsyncDisposable
 {
     private readonly HttpClient _client = fixture.CreateClient();
 
