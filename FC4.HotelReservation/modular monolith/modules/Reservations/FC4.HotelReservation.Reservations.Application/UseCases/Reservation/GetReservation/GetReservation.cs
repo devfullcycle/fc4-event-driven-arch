@@ -10,7 +10,7 @@ public class GetReservation(IReservationRepository reservationRepository) : IGet
     {
         var reservation = await reservationRepository.GetByIdAsync(request.ReservationId, cancellationToken)
                           ?? throw new NotFoundException("Reservation not found");
-
+        
         return ReservationResult.FromReservation(reservation);
     }
 }

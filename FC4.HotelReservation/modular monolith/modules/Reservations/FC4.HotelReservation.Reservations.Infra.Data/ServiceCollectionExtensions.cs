@@ -1,5 +1,10 @@
+using System.Data;
+using FC4.HotelReservation.Reservations.Application.Queries.Common;
 using FC4.HotelReservation.Reservations.Domain.Repositories;
+using FC4.HotelReservation.Reservations.Infra.Data.DAOs;
 using FC4.HotelReservation.Reservations.Infra.Data.Repositories;
+using FC4.HotelReservation.Shared.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FC4.HotelReservation.Reservations.Infra.Data;
@@ -11,6 +16,8 @@ public static class ServiceCollectionExtensions
         return services
             .AddScoped<IReservationRepository, ReservationRepository>()
             .AddScoped<IReservationGuestRepository, ReservationGuestRepository>()
-            .AddScoped<IRoomTypeInventoryRepository, RoomTypeInventoryRepository>();
+            .AddScoped<IRoomTypeInventoryRepository, RoomTypeInventoryRepository>()
+            .AddScoped<IReservationDao, ReservationDao>()
+            .AddScoped<IDbConnection>(sp => sp.GetRequiredService<HotelDbContext>().Database.GetDbConnection());
     }
 }

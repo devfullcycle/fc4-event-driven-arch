@@ -10,4 +10,8 @@
       <ProjectReference Include="..\..\..\shared\FC4.HotelReservation.Shared.Infrastructure\FC4.HotelReservation.Shared.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Dapper" Version="2.1.72" />
+    </ItemGroup>
+
 </Project>
