@@ -1,4 +1,5 @@
 using Ardalis.GuardClauses;
+using FC4.HotelReservation.Reservations.Domain.Events;
 using FC4.HotelReservation.Shared.Domain;
 
 namespace FC4.HotelReservation.Reservations.Domain.Entities;
@@ -61,6 +62,12 @@ public class RoomTypeInventory : AggregateRoot, IVersioned
             throw new InvalidOperationException("Insufficient inventory available");
 
         TotalReserved += quantity;
+        RaiseEvent(new RoomsReservedEvent(
+            Id,
+            HotelId,
+            RoomTypeId,
+            Date,
+            quantity));
     }
 
     public void ReleaseRooms(int quantity)
@@ -71,5 +78,11 @@ public class RoomTypeInventory : AggregateRoot, IVersioned
             throw new InvalidOperationException("Cannot release more rooms than reserved");
 
         TotalReserved -= quantity;
+        RaiseEvent(new RoomsReleasedEvent(
+            Id,
+            HotelId,
+            RoomTypeId,
+            Date,
+            quantity));
     }
 }
