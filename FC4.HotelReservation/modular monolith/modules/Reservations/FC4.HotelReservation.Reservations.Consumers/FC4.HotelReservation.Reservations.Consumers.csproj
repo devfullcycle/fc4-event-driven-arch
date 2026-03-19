@@ -11,4 +11,8 @@
       <ProjectReference Include="..\FC4.HotelReservation.Reservations.Application\FC4.HotelReservation.Reservations.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MongoDB.Driver" Version="3.7.1" />
+    </ItemGroup>
+
 </Project>
