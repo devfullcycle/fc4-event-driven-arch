@@ -10,6 +10,29 @@ services:
             - "5432:5432"
         volumes:
             - postgres_data:/var/lib/postgresql/data
+    
+    mongodb:
+        image: mongo:7
+        container_name: mongodb-hotel
+        environment:
+            MONGO_INITDB_DATABASE: hotel_reservation
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongodb_data:/data/db
+            - ./mongo-init:/docker-entrypoint-initdb.d:ro
+
+    mongo-express:
+        image: mongo-express:latest
+        container_name: mongo-express-hotel
+        ports:
+            - "8082:8081"
+        depends_on:
+            - mongodb
+        environment:
+            ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+            ME_CONFIG_BASICAUTH: "false"
 
 volumes:
     postgres_data:
+    mongodb_data:

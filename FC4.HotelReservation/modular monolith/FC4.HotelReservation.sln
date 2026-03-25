@@ -11,6 +11,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sandbox", "sandbox", "{D9C71AEE-0DE6-42D2-B959-D01167C3D806}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
+		mongo-init\init-mongo.js = mongo-init\init-mongo.js
+		update-db.sh = update-db.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{432C9F4D-3173-4DC1-80FF-F8B88EDCA223}"

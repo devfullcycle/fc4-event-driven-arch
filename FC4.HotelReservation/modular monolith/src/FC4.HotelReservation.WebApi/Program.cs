@@ -33,6 +33,7 @@ builder.Services
     .AddPaymentsRepositories()
     .AddGuestsRepositories()
     .AddCatalogRepositories()
+    .AddMongoDbReadDatabase(builder.Configuration)
     .AddPostgresMigrationHostedService(options =>
     {
         options.CreateDatabase = false;
