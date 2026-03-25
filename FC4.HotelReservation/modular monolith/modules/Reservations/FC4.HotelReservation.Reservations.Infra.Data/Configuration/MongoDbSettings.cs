@@ -1,4 +1,4 @@
-namespace FC4.HotelReservation.Reservations.Consumers.Configuration;
+namespace FC4.HotelReservation.Reservations.Infra.Data.Configuration;
 
 public class MongoDbSettings
 {
