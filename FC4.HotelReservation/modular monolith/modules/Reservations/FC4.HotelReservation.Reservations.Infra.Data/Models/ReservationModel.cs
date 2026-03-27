@@ -22,6 +22,8 @@ public class ReservationModel
     
     public DateTime StartDate { get; set; }
     
+    public string HotelName { get; set; }
+    
     public DateTime EndDate { get; set; }
     
     public int RoomQuantity { get; set; }
@@ -48,6 +50,7 @@ public class ReservationModel
             RoomQuantity,
             Amount,
             Currency,
-            CreatedAt);
+            CreatedAt,
+            HotelName);
     }
 }

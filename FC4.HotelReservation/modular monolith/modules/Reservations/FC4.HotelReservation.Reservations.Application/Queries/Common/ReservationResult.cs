@@ -12,7 +12,8 @@ public record ReservationResult(
     int RoomQuantity,
     decimal Amount,
     string Currency,
-    DateTime CreatedAt)
+    DateTime CreatedAt,
+    string? HotelName = null)
 {
     public static ReservationResult FromReservation(Domain.Entities.Reservation reservation)
     {
