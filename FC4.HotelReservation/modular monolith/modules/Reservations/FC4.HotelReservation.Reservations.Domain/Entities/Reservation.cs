@@ -6,7 +6,7 @@ using FC4.HotelReservation.Shared.Domain;
 
 namespace FC4.HotelReservation.Reservations.Domain.Entities;
 
-public class Reservation : AggregateRoot
+public class Reservation : EventSourced
 {
     public Guid HotelId { get; }
     public Guid RoomTypeId { get; }

@@ -10,9 +10,9 @@ public abstract class AggregateRoot : Entity
     {
     }
     
-    private readonly HashSet<DomainEvent> _events = [];
-    public IReadOnlyCollection<DomainEvent> Events => new ReadOnlyCollection<DomainEvent>(_events.ToList());
+    private readonly List<DomainEvent> _events = [];
+    public IReadOnlyCollection<DomainEvent> Events => new ReadOnlyCollection<DomainEvent>(_events);
     
-    protected void RaiseEvent(DomainEvent @event) => _events.Add(@event);
+    protected virtual void RaiseEvent(DomainEvent @event) => _events.Add(@event);
     public void RemoveEvent(DomainEvent @event) => _events.Remove(@event);
 }
