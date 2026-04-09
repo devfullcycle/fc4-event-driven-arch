@@ -4,14 +4,13 @@ using FC4.HotelReservation.Shared.Domain;
 
 namespace FC4.HotelReservation.Reservations.Domain.Entities;
 
-public class RoomTypeInventory : AggregateRoot, IVersioned
+public class RoomTypeInventory : EventSourced
 {
     public Guid HotelId { get; private set; }
     public Guid RoomTypeId { get; private set; }
     public DateTime Date { get; private set; }
     public int TotalInventory { get; private set; }
     public int TotalReserved { get; private set; }
-    public int Version { get; private set; }
 
     private RoomTypeInventory()
     {

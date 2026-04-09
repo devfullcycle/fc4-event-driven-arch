@@ -1,6 +1,7 @@
 using FC4.HotelReservation.Shared.Application;
 using FC4.HotelReservation.Shared.Application.Exceptions;
 using FC4.HotelReservation.Shared.Domain;
+using FC4.HotelReservation.Shared.Infrastructure.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -26,19 +27,14 @@ public class UnitOfWork(
         {
             foreach (var @event in aggregateRoot.Events.ToList())
             {
+                if (aggregateRoot is EventSourced)
+                {
+                    dbContext.EventStore.Add(EventEntry.FromDomainEvent(@event));
+                }
                 await publisher.Publish((dynamic)@event, cancellationToken);
                 aggregateRoot.RemoveEvent(@event);
             }
         }
-
-        var versionedEntries = dbContext
-            .ChangeTracker
-            .Entries<IVersioned>()
-            .Where(entry => entry.State == EntityState.Modified)
-            .ToList();
-
-        foreach (var entry in versionedEntries)
-            entry.Property(nameof(IVersioned.Version)).CurrentValue = entry.Entity.Version + 1;
 
         try
         {

@@ -4,6 +4,7 @@ using FC4.HotelReservation.Shared.Infrastructure.Mappings;
 using FC4.HotelReservation.Shared.Infrastructure.SeedData;
 using FC4.HotelReservation.Payments.Domain.Entities;
 using FC4.HotelReservation.Reservations.Domain.Entities;
+using FC4.HotelReservation.Shared.Infrastructure.Models;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,6 +20,7 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
     public DbSet<RoomType> RoomTypes { get; set; }
     public DbSet<RoomTypeInventory> RoomTypeInventories { get; set; }
     public DbSet<RoomTypeRate> RoomTypeRates { get; set; }
+    public DbSet<EventEntry> EventStore { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -30,6 +32,7 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
         modelBuilder.ApplyConfiguration(new RoomTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoomTypeInventoryConfiguration());
         modelBuilder.ApplyConfiguration(new RoomTypeRateConfiguration());
+        modelBuilder.ApplyConfiguration(new EventEntryConfiguration());
         
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();

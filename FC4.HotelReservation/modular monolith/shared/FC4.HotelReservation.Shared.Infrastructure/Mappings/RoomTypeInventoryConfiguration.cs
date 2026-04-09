@@ -39,8 +39,7 @@ public class RoomTypeInventoryConfiguration : IEntityTypeConfiguration<RoomTypeI
             .IsRequired();
         
         builder.Property(rti => rti.Version)
-            .HasColumnName("version")
-            .IsConcurrencyToken();
+            .HasColumnName("version");
             
         builder.HasOne<Hotel>()
             .WithMany()

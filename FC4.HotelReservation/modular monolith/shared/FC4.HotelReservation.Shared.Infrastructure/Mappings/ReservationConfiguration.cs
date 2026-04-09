@@ -72,6 +72,9 @@ public class ReservationConfiguration : IEntityTypeConfiguration<Reservation>
                 .IsRequired();
         });
         
+        builder.Property(rti => rti.Version)
+            .HasColumnName("version");
+        
         builder.HasOne<Hotel>()
             .WithMany()
             .HasForeignKey(r => r.HotelId)
