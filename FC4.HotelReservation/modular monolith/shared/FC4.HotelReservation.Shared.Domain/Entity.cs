@@ -10,5 +10,5 @@ public abstract class Entity
         Id = Guard.Against.Default(id, nameof(id));
     }
     
-    public Guid Id { get; }
+    public Guid Id { get; protected set; }
 }

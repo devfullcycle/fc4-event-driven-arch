@@ -16,7 +16,7 @@ public class RoomTypeInventory : EventSourced
     {
     } // For EF Core
 
-    public RoomTypeInventory(
+    internal RoomTypeInventory(
         Guid id,
         Guid hotelId,
         Guid roomTypeId,
@@ -37,13 +37,18 @@ public class RoomTypeInventory : EventSourced
         DateTime date,
         int totalInventory)
     {
-        return new RoomTypeInventory(
+        Guard.Against.Default(hotelId, nameof(hotelId));
+        Guard.Against.Default(roomTypeId, nameof(roomTypeId));
+        Guard.Against.Default(date, nameof(date));
+        Guard.Against.Negative(totalInventory, nameof(totalInventory));
+        var roomTypeInventory = new RoomTypeInventory();
+        roomTypeInventory.RaiseEvent(new RoomTypeInventoryCreatedEvent(
             Guid.NewGuid(),
             hotelId,
             roomTypeId,
             date,
-            totalInventory,
-            0);
+            totalInventory));
+        return roomTypeInventory;
     }
 
     public int AvailableInventory => TotalInventory - TotalReserved;
@@ -60,7 +65,6 @@ public class RoomTypeInventory : EventSourced
         if (!CanReserve(quantity))
             throw new InvalidOperationException("Insufficient inventory available");
 
-        TotalReserved += quantity;
         RaiseEvent(new RoomsReservedEvent(
             Id,
             HotelId,
@@ -76,12 +80,34 @@ public class RoomTypeInventory : EventSourced
         if (quantity > TotalReserved)
             throw new InvalidOperationException("Cannot release more rooms than reserved");
 
-        TotalReserved -= quantity;
         RaiseEvent(new RoomsReleasedEvent(
             Id,
             HotelId,
             RoomTypeId,
             Date,
             quantity));
+    }
+
+    protected override void Apply(DomainEvent domainEvent)
+    {
+        switch (domainEvent)
+        {
+            case RoomTypeInventoryCreatedEvent e:
+                Id = e.InventoryId;
+                HotelId = e.HotelId;
+                RoomTypeId = e.RoomTypeId;
+                Date = e.Date;
+                TotalInventory = e.TotalInventory;
+                TotalReserved = 0;
+                break;
+            case RoomsReservedEvent e:
+                TotalReserved += e.Quantity;
+                break;
+            case RoomsReleasedEvent e:
+                TotalReserved -= e.Quantity;
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown event type: {domainEvent.GetType().Name}");
+        }
     }
 }

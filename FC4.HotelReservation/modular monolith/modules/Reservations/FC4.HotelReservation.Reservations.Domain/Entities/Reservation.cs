@@ -8,20 +8,20 @@ namespace FC4.HotelReservation.Reservations.Domain.Entities;
 
 public class Reservation : EventSourced
 {
-    public Guid HotelId { get; }
-    public Guid RoomTypeId { get; }
-    public DateRange StayPeriod { get; }
+    public Guid HotelId { get; private set; }
+    public Guid RoomTypeId { get; private set; }
+    public DateRange StayPeriod { get; private set; }
     public ReservationStatus Status { get; private set; }
     public Guid GuestId { get; private set; }
-    public int RoomQuantity { get; }
-    public Money TotalAmount { get; }
+    public int RoomQuantity { get; private set; }
+    public Money TotalAmount { get; private set; }
     public DateTime CreatedAt { get; private set; }
 
     private Reservation()
     {
     } // For EF Core
 
-    public Reservation(
+    internal Reservation(
         Guid id,
         Guid hotelId,
         Guid roomTypeId,
@@ -50,10 +50,15 @@ public class Reservation : EventSourced
         int roomQuantity,
         Money totalAmount)
     {
-        var reservation = new Reservation(Guid.NewGuid(), hotelId, roomTypeId, stayPeriod, guestId,
-            roomQuantity, totalAmount, ReservationStatus.Pending, DateTime.UtcNow);
+        Guard.Against.Default(hotelId, nameof(hotelId));
+        Guard.Against.Default(roomTypeId, nameof(roomTypeId));
+        Guard.Against.Null(stayPeriod, nameof(stayPeriod));
+        Guard.Against.Default(guestId, nameof(guestId));
+        Guard.Against.NegativeOrZero(roomQuantity, nameof(roomQuantity));
+        Guard.Against.Null(totalAmount, nameof(totalAmount));
+        var reservation = new Reservation();
         reservation.RaiseEvent(new ReservationCreatedEvent(
-            reservation.Id, hotelId, roomTypeId, stayPeriod, guestId, roomQuantity, totalAmount));
+            Guid.NewGuid(), hotelId, roomTypeId, stayPeriod, guestId, roomQuantity, totalAmount));
         return reservation;
     }
 
@@ -62,7 +67,6 @@ public class Reservation : EventSourced
         if (Status is ReservationStatus.Cancelled or ReservationStatus.Rejected)
             throw new InvalidOperationException("Reservation is already cancelled or rejected");
 
-        Status = ReservationStatus.Cancelled;
         RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, Status));
     }
 
@@ -71,7 +75,6 @@ public class Reservation : EventSourced
         if (Status != ReservationStatus.Pending)
             throw new InvalidOperationException("Can only reject pending reservations");
 
-        Status = ReservationStatus.Rejected;
         RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, Status));
     }
 
@@ -80,7 +83,6 @@ public class Reservation : EventSourced
         if (Status is ReservationStatus.Cancelled or ReservationStatus.Rejected)
             throw new InvalidOperationException("Cannot mark cancelled or rejected reservation as paid");
 
-        Status = ReservationStatus.Paid;
         RaiseEvent(new ReservationPaidEvent(Id));
     }
 
@@ -89,7 +91,33 @@ public class Reservation : EventSourced
         if (Status != ReservationStatus.Paid)
             throw new InvalidOperationException("Can only refund paid reservations");
 
-        Status = ReservationStatus.Refunded;
         RaiseEvent(new ReservationRefundedEvent(Id));
+    }
+
+    protected override void Apply(DomainEvent domainEvent)
+    {
+        switch (domainEvent)
+        {
+            case ReservationCreatedEvent e:
+                Id = e.ReservationId;
+                HotelId = e.HotelId;
+                RoomTypeId = e.RoomTypeId;
+                StayPeriod = e.StayPeriod;
+                GuestId = e.GuestId;
+                RoomQuantity = e.RoomQuantity;
+                TotalAmount = e.Amount;
+                Status = ReservationStatus.Pending;
+                CreatedAt = domainEvent.OccuredOn;
+                break;
+            case ReservationCanceledEvent e:
+                Status = e.Status;
+                break;
+            case ReservationPaidEvent:
+                Status = ReservationStatus.Paid;
+                break;
+            case ReservationRefundedEvent:
+                Status = ReservationStatus.Refunded;
+                break;
+        }
     }
 }
