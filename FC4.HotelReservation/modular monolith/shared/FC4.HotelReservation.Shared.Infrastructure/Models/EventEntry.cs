@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json;
 using FC4.HotelReservation.Shared.Domain;
 
@@ -5,6 +6,7 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Models;
 
 public class EventEntry
 {
+    private static readonly ConcurrentDictionary<string, Type> TypeCache = new();
     private EventEntry() { } // For EF Core
     private EventEntry(Guid eventId, Guid aggregateId, int aggregateVersion, string eventType, string eventData,
         DateTime occurredOn)
@@ -30,4 +32,15 @@ public class EventEntry
             domainEvent.GetType().Name,
             JsonSerializer.Serialize(domainEvent, domainEvent.GetType()),
             domainEvent.OccuredOn);
+
+    public DomainEvent ToDomainEvent()
+    {
+        var type = TypeCache.GetOrAdd(EventType, name =>
+            AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(t => t.Name == name && t.IsSubclassOf(typeof(DomainEvent)))
+            ?? throw new InvalidOperationException(
+                $"Unknown event type: '{name}'. No DomainEvent subclass with this name was found in loaded assemblies."));
+        return (DomainEvent)JsonSerializer.Deserialize(EventData, type)!;
+    }
 }

@@ -13,6 +13,13 @@ public class UnitOfWork(
     IPublisher publisher) : IUnitOfWork
 {
     private readonly IDbContextTransaction _transaction = dbContext.Database.BeginTransaction();
+    private readonly List<AggregateRoot> _registeredAggregates = [];
+    
+    public void Register(AggregateRoot aggregateRoot)
+    {
+        if (!_registeredAggregates.Contains(aggregateRoot))
+            _registeredAggregates.Add(aggregateRoot);
+    }
 
     public async Task CommitAsync(CancellationToken cancellationToken)
     {

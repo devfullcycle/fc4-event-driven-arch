@@ -33,14 +33,12 @@ public class CreateReservationHandler(
         var totalAmount = await rateService.CalculateTotalAmountAsync(
             request.HotelId, request.RoomTypeId, period, request.RoomQuantity, cancellationToken);
         var reservation = request.ToReservation(totalAmount);
-        await reservationRepository.CreateAsync(reservation, cancellationToken);
+        unitOfWork.Register(reservation);
 
         foreach (var inventory in inventories)
         {
             inventory.ReserveRooms(request.RoomQuantity);
-            await roomTypeInventoryRepository.UpdateAsync(inventory, cancellationToken);
         }
-    
         await unitOfWork.CommitAsync(cancellationToken);
         return new CreateReservationResult(reservation.Id);
     }

@@ -11,7 +11,6 @@ public class CancelReservationHandler(IReservationRepository reservationReposito
         var reservation = await reservationRepository.GetByIdAsync(request.ReservationId, cancellationToken)
                           ?? throw new NotFoundException("Reservation not found");
         reservation.Cancel();
-        await reservationRepository.UpdateAsync(reservation, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
     }
 }

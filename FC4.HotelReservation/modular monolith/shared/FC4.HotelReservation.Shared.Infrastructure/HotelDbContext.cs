@@ -15,7 +15,6 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
     public DbSet<Guest> Guests { get; set; }
     public DbSet<Hotel> Hotels { get; set; }
     public DbSet<Payment> Payments { get; set; }
-    public DbSet<Reservation> Reservations { get; set; }
     public DbSet<Room> Rooms { get; set; }
     public DbSet<RoomType> RoomTypes { get; set; }
     public DbSet<RoomTypeInventory> RoomTypeInventories { get; set; }
@@ -27,7 +26,6 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
         modelBuilder.ApplyConfiguration(new GuestConfiguration());
         modelBuilder.ApplyConfiguration(new HotelConfiguration());
         modelBuilder.ApplyConfiguration(new PaymentConfiguration());
-        modelBuilder.ApplyConfiguration(new ReservationConfiguration());
         modelBuilder.ApplyConfiguration(new RoomConfiguration());
         modelBuilder.ApplyConfiguration(new RoomTypeConfiguration());
         modelBuilder.ApplyConfiguration(new RoomTypeInventoryConfiguration());

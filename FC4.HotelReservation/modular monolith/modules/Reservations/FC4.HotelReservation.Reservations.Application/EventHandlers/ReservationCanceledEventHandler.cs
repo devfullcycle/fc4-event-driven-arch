@@ -19,7 +19,6 @@ public class ReservationCanceledEventHandler(
         foreach (var inventory in inventories)
         {
             inventory.ReleaseRooms(notification.RoomQuantity);
-            await roomTypeInventoryRepository.UpdateAsync(inventory, cancellationToken);
         }
         
         var integrationEvent = new ReservationStatusChanged(

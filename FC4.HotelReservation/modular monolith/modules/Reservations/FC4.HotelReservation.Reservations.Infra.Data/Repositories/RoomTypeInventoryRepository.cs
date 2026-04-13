@@ -28,9 +28,4 @@ public class RoomTypeInventoryRepository(HotelDbContext context) : IRoomTypeInve
             .ToListAsync(cancellationToken);
     }
 
-    public async Task UpdateAsync(RoomTypeInventory inventory, CancellationToken cancellationToken)
-    {
-        context.RoomTypeInventories.Update(inventory);
-        await Task.CompletedTask;
-    }
 }

@@ -29,7 +29,6 @@ public class ProcessPaymentStatusHandler(
                 return;
         }
 
-        await reservationRepository.UpdateAsync(reservation, cancellationToken);
         await unitOfWork.CommitAsync(cancellationToken);
     }
 }
