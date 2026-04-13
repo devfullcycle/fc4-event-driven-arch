@@ -14,7 +14,7 @@ public class UnitOfWork(
 {
     private readonly IDbContextTransaction _transaction = dbContext.Database.BeginTransaction();
     private readonly List<AggregateRoot> _registeredAggregates = [];
-    
+
     public void Register(AggregateRoot aggregateRoot)
     {
         if (!_registeredAggregates.Contains(aggregateRoot))
@@ -23,25 +23,31 @@ public class UnitOfWork(
 
     public async Task CommitAsync(CancellationToken cancellationToken)
     {
-        var aggregateRoots = dbContext
-            .ChangeTracker
-            .Entries<AggregateRoot>()
-            .Where(entry => entry.Entity.Events.Count > 0)
-            .Select(entry => entry.Entity)
-            .ToList();
-
-        foreach (var aggregateRoot in aggregateRoots)
+        List<AggregateRoot> aggregateRoots;
+        do
         {
-            foreach (var @event in aggregateRoot.Events.ToList())
+            aggregateRoots = dbContext
+                .ChangeTracker
+                .Entries<AggregateRoot>()
+                .Select(entry => entry.Entity)
+                .Union(_registeredAggregates)
+                .Where(entity => entity.Events.Count > 0)
+                .ToList();
+
+            foreach (var aggregateRoot in aggregateRoots)
             {
-                if (aggregateRoot is EventSourced)
+                foreach (var @event in aggregateRoot.Events.ToList())
                 {
-                    dbContext.EventStore.Add(EventEntry.FromDomainEvent(@event));
+                    if (aggregateRoot is EventSourced)
+                    {
+                        dbContext.EventStore.Add(EventEntry.FromDomainEvent(@event));
+                    }
+
+                    await publisher.Publish((dynamic)@event, cancellationToken);
+                    aggregateRoot.RemoveEvent(@event);
                 }
-                await publisher.Publish((dynamic)@event, cancellationToken);
-                aggregateRoot.RemoveEvent(@event);
             }
-        }
+        } while (aggregateRoots.Any());
 
         try
         {

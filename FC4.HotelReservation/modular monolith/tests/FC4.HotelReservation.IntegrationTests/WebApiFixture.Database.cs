@@ -125,7 +125,7 @@ public partial class WebApiFixture
         var dbContext = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
 
         var dates = period.GetDates().ToList();
-        return await dbContext.RoomTypeInventories
+        return await dbContext.RoomTypeInventoryProjections
             .Where(i => i.HotelId == hotelId &&
                         i.RoomTypeId == roomTypeId &&
                         dates.Contains(i.Date))
@@ -182,7 +182,7 @@ public partial class WebApiFixture
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
 
-        return await dbContext.RoomTypeInventories
+        return await dbContext.RoomTypeInventoryProjections
             .FirstOrDefaultAsync(i => i.HotelId == hotelId &&
                                       i.RoomTypeId == roomTypeId &&
                                       i.Date == startDate);
