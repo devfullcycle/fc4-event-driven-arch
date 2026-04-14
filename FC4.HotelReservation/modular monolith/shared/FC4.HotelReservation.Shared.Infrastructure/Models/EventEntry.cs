@@ -8,7 +8,7 @@ public class EventEntry
 {
     private static readonly ConcurrentDictionary<string, Type> TypeCache = new();
     private EventEntry() { } // For EF Core
-    private EventEntry(Guid eventId, Guid aggregateId, int aggregateVersion, string eventType, string eventData,
+    public EventEntry(Guid eventId, Guid aggregateId, int aggregateVersion, string eventType, string eventData,
         DateTime occurredOn)
     {
         EventId = eventId;

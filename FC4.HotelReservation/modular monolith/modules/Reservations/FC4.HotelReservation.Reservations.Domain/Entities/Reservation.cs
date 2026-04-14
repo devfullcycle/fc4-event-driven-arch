@@ -67,7 +67,7 @@ public class Reservation : EventSourced
         if (Status is ReservationStatus.Cancelled or ReservationStatus.Rejected)
             throw new InvalidOperationException("Reservation is already cancelled or rejected");
 
-        RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, Status));
+        RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, ReservationStatus.Cancelled));
     }
 
     public void Reject()
@@ -75,7 +75,7 @@ public class Reservation : EventSourced
         if (Status != ReservationStatus.Pending)
             throw new InvalidOperationException("Can only reject pending reservations");
 
-        RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, Status));
+        RaiseEvent(new ReservationCanceledEvent(Id, HotelId, RoomTypeId, StayPeriod, RoomQuantity, ReservationStatus.Rejected));
     }
 
     public void MarkAsPaid()

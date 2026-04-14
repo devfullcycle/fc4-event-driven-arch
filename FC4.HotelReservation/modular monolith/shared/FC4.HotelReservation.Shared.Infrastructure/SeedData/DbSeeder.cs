@@ -1,6 +1,7 @@
+using System.Text.Json;
 using FC4.HotelReservation.Catalog.Domain.Entities;
 using FC4.HotelReservation.Guests.Domain.Entities;
-using FC4.HotelReservation.Reservations.Domain.Entities;
+using FC4.HotelReservation.Shared.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FC4.HotelReservation.Shared.Infrastructure.SeedData;
@@ -82,27 +83,52 @@ public static class DbSeeder
         var hotelId = new Guid("11111111-1111-1111-1111-111111111111");
         var roomTypeId = new Guid("11111111-1111-1111-1111-111111111111");
         
-        var inventories = new List<object>();
-        var startDate = new DateTime(2026, 3, 23); // Data atual
+        var projections = new List<object>();
+        var eventEntries = new List<object>();
+        var startDate = new DateTime(2026, 3, 23);
+        var occurredOn = new DateTime(2026, 3, 22, 0, 0, 0, DateTimeKind.Utc);
         
-        // Criar inventário para os próximos 60 dias
         for (int dayOffset = 0; dayOffset < 60; dayOffset++)
         {
             var currentDate = startDate.AddDays(dayOffset);
+            var inventoryId = new Guid($"44444444-4444-4444-4444-{(dayOffset + 1):D12}");
 
-            inventories.Add(new
+            projections.Add(new
             {
-                Id = new Guid($"44444444-4444-4444-4444-{(dayOffset + 1):D12}"),
+                Id = inventoryId,
                 RoomTypeId = roomTypeId,
                 HotelId = hotelId,
                 Date = currentDate,
+            });
+
+            // Seed RoomTypeInventoryCreatedEvent in the event store
+            var eventId = new Guid($"55555555-5555-5555-5555-{(dayOffset + 1):D12}");
+            var eventData = JsonSerializer.Serialize(new
+            {
+                InventoryId = inventoryId,
+                HotelId = hotelId,
+                RoomTypeId = roomTypeId,
+                Date = currentDate,
                 TotalInventory = 10,
-                TotalReserved = 0,
-                Version = 1
+                EventId = eventId,
+                AggregateId = inventoryId,
+                AggregateVersion = 0,
+                OccuredOn = occurredOn
+            });
+
+            eventEntries.Add(new
+            {
+                EventId = eventId,
+                AggregateId = inventoryId,
+                AggregateVersion = 0,
+                EventType = "RoomTypeInventoryCreatedEvent",
+                EventData = eventData,
+                OccurredOn = occurredOn
             });
         }
 
-        modelBuilder.Entity<RoomTypeInventory>().HasData(inventories.ToArray());
+        modelBuilder.Entity<RoomTypeInventoryProjection>().HasData(projections.ToArray());
+        modelBuilder.Entity<EventEntry>().HasData(eventEntries.ToArray());
     }
 
     private static void SeedRoomTypeRates(ModelBuilder modelBuilder)
@@ -154,5 +180,3 @@ public static class DbSeeder
         }
     }
 }
-
-

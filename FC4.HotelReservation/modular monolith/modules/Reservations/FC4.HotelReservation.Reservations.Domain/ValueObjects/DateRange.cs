@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Ardalis.GuardClauses;
 
 namespace FC4.HotelReservation.Reservations.Domain.ValueObjects;
@@ -16,6 +17,7 @@ public record DateRange
     public DateTime StartDate { get; }
     public DateTime EndDate { get; }
 
+    [JsonIgnore]
     public int NightCount => (EndDate - StartDate).Days;
 
     public IEnumerable<DateTime> GetDates()

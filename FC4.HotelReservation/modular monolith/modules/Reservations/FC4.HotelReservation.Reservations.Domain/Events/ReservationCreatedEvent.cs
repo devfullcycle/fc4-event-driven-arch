@@ -10,7 +10,7 @@ public class ReservationCreatedEvent(
     DateRange stayPeriod,
     Guid guestId,
     int roomQuantity,
-    Money totalAmount) : DomainEvent
+    Money amount) : DomainEvent
 {
     public Guid ReservationId { get; } = reservationId;
     public Guid HotelId { get; } = hotelId;
@@ -18,5 +18,5 @@ public class ReservationCreatedEvent(
     public DateRange StayPeriod { get; } = stayPeriod;
     public Guid GuestId { get; } = guestId;
     public int RoomQuantity { get; } = roomQuantity;
-    public Money Amount { get; } = totalAmount;
+    public Money Amount { get; } = amount;
 }

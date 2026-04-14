@@ -5,6 +5,7 @@ using FC4.HotelReservation.Shared.Infrastructure.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 
 namespace FC4.HotelReservation.Shared.Infrastructure;
 
@@ -54,7 +55,12 @@ public class UnitOfWork(
             await dbContext.SaveChangesAsync(cancellationToken);
             await _transaction.CommitAsync(cancellationToken);
         }
-        catch (DbUpdateConcurrencyException ex)
+        catch (Exception ex)
+            when (ex.InnerException is PostgresException
+                  {
+                      MessageText:
+                      "duplicate key value violates unique constraint \"uix_event_store_aggregate_id_version\""
+                  })
         {
             throw new ConflictException("Concurrency conflict occurred during save operation", ex);
         }

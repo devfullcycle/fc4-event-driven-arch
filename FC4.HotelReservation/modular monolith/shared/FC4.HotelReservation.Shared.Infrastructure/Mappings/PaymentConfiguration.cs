@@ -19,11 +19,6 @@ public class PaymentConfiguration: IEntityTypeConfiguration<Payment>
         builder.Property(p => p.ReservationId)
             .HasColumnName("reservation_id")
             .IsRequired();
-        
-        builder.HasOne<Reservation>()
-            .WithMany()
-            .HasForeignKey(p => p.ReservationId)
-            .HasConstraintName("fk_payments_reservations");
             
         builder.Property(p => p.Status)
             .HasColumnName("status")
