@@ -14,10 +14,21 @@ public class SnapshotJsonOptions
             PropertyNameCaseInsensitive = true,
             TypeInfoResolver = new DefaultJsonTypeInfoResolver
             {
-                Modifiers = { AllowNonPublicSetters }
+                Modifiers = { AllowNonPublicConstructor, AllowNonPublicSetters, ExcludeTransientProperties }
             }
         };
         return options;
+    }
+
+    private static void AllowNonPublicConstructor(JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Kind != JsonTypeInfoKind.Object)
+            return;
+
+        if (typeInfo.CreateObject is not null)
+            return;
+
+        typeInfo.CreateObject = () => Activator.CreateInstance(typeInfo.Type, nonPublic: true)!;
     }
 
     private static void AllowNonPublicSetters(JsonTypeInfo typeInfo)
@@ -46,7 +57,19 @@ public class SnapshotJsonOptions
         }
     }
 
-    public static string Serialize<T>(T aggregate) => JsonSerializer.Serialize(aggregate, Options);
+    private static void ExcludeTransientProperties(JsonTypeInfo typeInfo)
+    {
+        if (typeInfo.Kind != JsonTypeInfoKind.Object)
+            return;
+
+        for (var i = typeInfo.Properties.Count - 1; i >= 0; i--)
+        {
+            if (typeInfo.Properties[i].Name is "Events")
+                typeInfo.Properties.RemoveAt(i);
+        }
+    }
+
+    public static string Serialize<T>(T aggregate) => JsonSerializer.Serialize(aggregate, aggregate!.GetType(), Options);
 
     public static T? Deserialize<T>(string json) => JsonSerializer.Deserialize<T>(json, Options);
 }
