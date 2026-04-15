@@ -13,6 +13,7 @@ public class UnitOfWork(
     HotelDbContext dbContext,
     IPublisher publisher) : IUnitOfWork
 {
+    private const int SnapshotInterval = 5;
     private readonly IDbContextTransaction _transaction = dbContext.Database.BeginTransaction();
     private readonly List<AggregateRoot> _registeredAggregates = [];
 
@@ -49,6 +50,8 @@ public class UnitOfWork(
                 }
             }
         } while (aggregateRoots.Any());
+        
+        SaveSnapshots();
 
         try
         {
@@ -67,6 +70,24 @@ public class UnitOfWork(
         finally
         {
             await _transaction.DisposeAsync();
+        }
+    }
+
+    private void SaveSnapshots()
+    {
+        var eventSourcedAggregates = _registeredAggregates.OfType<EventSourced>()
+            .Distinct()
+            .Where(a => a.Version > 0 && a.Version % SnapshotInterval == 0);
+        
+        foreach (var aggregate in eventSourcedAggregates)
+        {
+
+            dbContext.Snapshots.Add(new SnapshotEntry(
+                aggregate.Id,
+                aggregate.GetType().Name,
+                aggregate.Version,
+                SnapshotJsonOptions.Serialize(aggregate),
+                DateTime.UtcNow));
         }
     }
 }

@@ -20,6 +20,7 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
     public DbSet<RoomTypeInventoryProjection> RoomTypeInventoryProjections { get; set; }
     public DbSet<RoomTypeRate> RoomTypeRates { get; set; }
     public DbSet<EventEntry> EventStore { get; set; }
+    public DbSet<SnapshotEntry> Snapshots { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,14 +32,15 @@ public class HotelDbContext(DbContextOptions<HotelDbContext> options) : DbContex
         modelBuilder.ApplyConfiguration(new RoomTypeInventoryProjectionConfiguration());
         modelBuilder.ApplyConfiguration(new RoomTypeRateConfiguration());
         modelBuilder.ApplyConfiguration(new EventEntryConfiguration());
-        
+        modelBuilder.ApplyConfiguration(new SnapshotEntryConfiguration());
+
         modelBuilder.AddInboxStateEntity();
         modelBuilder.AddOutboxMessageEntity();
         modelBuilder.AddOutboxStateEntity();
-        
+
         // Seed data
         modelBuilder.SeedData();
-        
+
         base.OnModelCreating(modelBuilder);
     }
 }
