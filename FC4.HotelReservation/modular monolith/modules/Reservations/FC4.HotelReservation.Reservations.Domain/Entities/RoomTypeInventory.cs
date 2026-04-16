@@ -14,6 +14,9 @@ public class RoomTypeInventory : EventSourced
 
     private RoomTypeInventory()
     {
+        Register<RoomTypeInventoryCreatedEvent>(OnRoomTypeInventoryCreated);
+        Register<RoomsReservedEvent>(OnRoomsReserved);
+        Register<RoomsReleasedEvent>(OnRoomsReleased);
     } // For EF Core
 
     internal RoomTypeInventory(
@@ -88,26 +91,23 @@ public class RoomTypeInventory : EventSourced
             quantity));
     }
 
-    protected override void Apply(DomainEvent domainEvent)
+    private void OnRoomTypeInventoryCreated(RoomTypeInventoryCreatedEvent e)
     {
-        switch (domainEvent)
-        {
-            case RoomTypeInventoryCreatedEvent e:
-                Id = e.InventoryId;
-                HotelId = e.HotelId;
-                RoomTypeId = e.RoomTypeId;
-                Date = e.Date;
-                TotalInventory = e.TotalInventory;
-                TotalReserved = 0;
-                break;
-            case RoomsReservedEvent e:
-                TotalReserved += e.Quantity;
-                break;
-            case RoomsReleasedEvent e:
-                TotalReserved -= e.Quantity;
-                break;
-            default:
-                throw new InvalidOperationException($"Unknown event type: {domainEvent.GetType().Name}");
-        }
+        Id = e.InventoryId;
+        HotelId = e.HotelId;
+        RoomTypeId = e.RoomTypeId;
+        Date = e.Date;
+        TotalInventory = e.TotalInventory;
+        TotalReserved = 0;
+    }
+
+    private void OnRoomsReserved(RoomsReservedEvent e)
+    {
+        TotalReserved += e.Quantity;
+    }
+
+    private void OnRoomsReleased(RoomsReleasedEvent e)
+    {
+        TotalReserved -= e.Quantity;
     }
 }

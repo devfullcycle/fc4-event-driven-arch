@@ -19,6 +19,10 @@ public class Reservation : EventSourced
 
     private Reservation()
     {
+        Register<ReservationCreatedEvent>(OnReservationCreated);
+        Register<ReservationCanceledEvent>(OnReservationCanceled);
+        Register<ReservationPaidEvent>(OnReservationPaid);
+        Register<ReservationRefundedEvent>(OnReservationRefunded);
     } // For EF Core
 
     internal Reservation(
@@ -94,30 +98,31 @@ public class Reservation : EventSourced
         RaiseEvent(new ReservationRefundedEvent(Id));
     }
 
-    protected override void Apply(DomainEvent domainEvent)
+    private void OnReservationCreated(ReservationCreatedEvent e)
     {
-        switch (domainEvent)
-        {
-            case ReservationCreatedEvent e:
-                Id = e.ReservationId;
-                HotelId = e.HotelId;
-                RoomTypeId = e.RoomTypeId;
-                StayPeriod = e.StayPeriod;
-                GuestId = e.GuestId;
-                RoomQuantity = e.RoomQuantity;
-                TotalAmount = e.Amount;
-                Status = ReservationStatus.Pending;
-                CreatedAt = domainEvent.OccuredOn;
-                break;
-            case ReservationCanceledEvent e:
-                Status = e.Status;
-                break;
-            case ReservationPaidEvent:
-                Status = ReservationStatus.Paid;
-                break;
-            case ReservationRefundedEvent:
-                Status = ReservationStatus.Refunded;
-                break;
-        }
+        Id = e.ReservationId;
+        HotelId = e.HotelId;
+        RoomTypeId = e.RoomTypeId;
+        StayPeriod = e.StayPeriod;
+        GuestId = e.GuestId;
+        RoomQuantity = e.RoomQuantity;
+        TotalAmount = e.Amount;
+        Status = ReservationStatus.Pending;
+        CreatedAt = e.OccuredOn;
+    }
+
+    private void OnReservationCanceled(ReservationCanceledEvent e)
+    {
+        Status = e.Status;
+    }
+
+    private void OnReservationPaid(ReservationPaidEvent e)
+    {
+        Status = ReservationStatus.Paid;
+    }
+
+    private void OnReservationRefunded(ReservationRefundedEvent e)
+    {
+        Status = ReservationStatus.Refunded;
     }
 }

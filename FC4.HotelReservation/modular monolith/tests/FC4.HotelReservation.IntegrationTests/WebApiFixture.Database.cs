@@ -352,7 +352,9 @@ public partial class WebApiFixture
     {
         using var scope = Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
-        var domainEvents = (await dbContext.EventStore.ToListAsync()).Select(e => e.ToDomainEvent());
+        var domainEvents = (await dbContext.EventStore.ToListAsync())
+            .Where(e => e.EventType.StartsWith("Reservation"))
+            .Select(e => e.ToDomainEvent());
 
         return domainEvents
             .GroupBy(e => e.AggregateId)

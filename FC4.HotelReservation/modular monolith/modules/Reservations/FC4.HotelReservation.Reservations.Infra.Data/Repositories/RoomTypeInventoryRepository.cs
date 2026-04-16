@@ -32,15 +32,8 @@ public class RoomTypeInventoryRepository(HotelDbContext context,
             .AsTracking()
             .ToListAsync(cancellationToken);
         
-        var inventories = new List<RoomTypeInventory>();
-        foreach (var projection in projections)
-        {
-            var inventory = await eventStoreRepository.LoadFromEventsAsync(projection.Id, cancellationToken);
-            if (inventory != null)
-                inventories.Add(inventory);
-        }
-        
-        return  inventories;
+        var aggregateIds = projections.Select(p => p.Id).ToList();
+        return await eventStoreRepository.LoadManyFromEventsAsync(aggregateIds, cancellationToken);
     }
 
 }
