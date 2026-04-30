@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Storming — Hotel Reservation (Connected)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f5f0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: auto; }
+
+  .board {
+    width: 6200px;
+    min-height: 100vh;
+    padding: 40px 60px 80px;
+    position: relative;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+      linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .title { font-size: 32px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: #666; margin-bottom: 40px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 36px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+  .legend-color { width: 22px; height: 22px; border-radius: 3px; box-shadow: 1px 1px 3px rgba(0,0,0,.15); }
+
+  /* === SVG Canvas for connections === */
+  svg.connections {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* === Nodes (sticky notes) === */
+  .node {
+    position: absolute;
+    width: 160px;
+    min-height: 100px;
+    padding: 14px 12px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    box-shadow: 2px 3px 8px rgba(0,0,0,.12);
+    z-index: 1;
+    transition: transform .15s, z-index 0s;
+  }
+  .node:hover { transform: scale(1.08); z-index: 20; }
+  .node .label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; opacity: .55; margin-bottom: 6px;
+  }
+  .node .name { font-weight: 700; font-size: 13px; word-break: break-word; }
+  .node .desc { margin-top: 6px; font-size: 11px; opacity: .7; }
+
+  /* Colors */
+  .event     { background: #FF8A24; color: #fff; }
+  .command   { background: #5C9DFF; color: #fff; }
+  .actor     { background: #FFE066; color: #1a1a2e; }
+  .aggregate { background: #FFD54F; color: #1a1a2e; border: 3px solid #FFC107; }
+  .policy    { background: #CE93D8; color: #1a1a2e; }
+  .external  { background: #F48FB1; color: #1a1a2e; }
+  .readmodel { background: #81D4FA; color: #1a1a2e; }
+  .decision  { background: #1a1a2e; color: #fff; border-radius: 50%; width: 56px; min-height: 56px;
+               display: flex; align-items: center; justify-content: center; text-align: center;
+               font-size: 11px; font-weight: 700; padding: 8px; }
+
+  /* Phase labels */
+  .phase-label {
+    position: absolute;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 20px;
+    z-index: 3; white-space: nowrap;
+  }
+  .phase-happy   { background: #4CAF50; color: #fff; }
+  .phase-cancel  { background: #F44336; color: #fff; }
+  .phase-reject  { background: #FF9800; color: #fff; }
+  .phase-refund  { background: #9C27B0; color: #fff; }
+  .phase-cqrs    { background: #2196F3; color: #fff; }
+  .phase-payment { background: #E91E63; color: #fff; }
+
+  /* Zone backgrounds */
+  .zone {
+    position: absolute;
+    border-radius: 16px;
+    z-index: 0;
+    opacity: .45;
+  }
+
+  /* Lifecycle boxes */
+  .lifecycle {
+    background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
+    padding: 20px 28px; display: inline-block;
+  }
+  .lifecycle h3 { font-size: 15px; margin-bottom: 12px; color: #1a1a2e; }
+  .lifecycle code { font-size: 13px; line-height: 1.8; }
+
+  .section-title {
+    font-size: 20px; font-weight: 700; color: #1a1a2e;
+    margin: 40px 0 16px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .int-table { border-collapse: collapse; font-size: 13px; margin-bottom: 40px; }
+  .int-table th { background: #1a1a2e; color: #fff; padding: 10px 18px; text-align: left; }
+  .int-table td { padding: 10px 18px; border-bottom: 1px solid #e0e0e0; }
+  .int-table tr:nth-child(even) td { background: #f9f9f9; }
+</style>
+</head>
+<body>
+<div class="board" id="board">
+
+  <div class="title">🟧 Event Storming — Fluxo Conectado Completo</div>
+  <div class="subtitle">Módulo de Reservas · FC4.HotelReservation &nbsp;|&nbsp; Todos os fluxos interligados</div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#FFE066"></div>Ator</div>
+    <div class="legend-item"><div class="legend-color" style="background:#5C9DFF"></div>Comando</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FF8A24"></div>Evento de Domínio</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFD54F;border:3px solid #FFC107"></div>Agregado</div>
+    <div class="legend-item"><div class="legend-color" style="background:#CE93D8"></div>Política / Processo</div>
+    <div class="legend-item"><div class="legend-color" style="background:#F48FB1"></div>Sistema Externo</div>
+    <div class="legend-item"><div class="legend-color" style="background:#81D4FA"></div>Read Model</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1a1a2e; border-radius:50%"></div>Decisão / Branch</div>
+  </div>
+
+  <!-- ========== ZONE BACKGROUNDS ========== -->
+  <div class="zone" style="left:40px; top:200px; width:2100px; height:280px; background:rgba(76,175,80,.06); border:2px solid rgba(76,175,80,.15);"></div>
+  <div class="zone" style="left:2160px; top:200px; width:1800px; height:280px; background:rgba(233,30,99,.06); border:2px solid rgba(233,30,99,.15);"></div>
+  <div class="zone" style="left:3980px; top:200px; width:1200px; height:280px; background:rgba(76,175,80,.06); border:2px solid rgba(76,175,80,.15);"></div>
+
+  <!-- Cancel zone -->
+  <div class="zone" style="left:800px; top:560px; width:1800px; height:260px; background:rgba(244,67,54,.05); border:2px solid rgba(244,67,54,.12);"></div>
+
+  <!-- Reject zone -->
+  <div class="zone" style="left:3980px; top:560px; width:1900px; height:260px; background:rgba(255,152,0,.05); border:2px solid rgba(255,152,0,.12);"></div>
+
+  <!-- Refund zone -->
+  <div class="zone" style="left:3980px; top:880px; width:1900px; height:260px; background:rgba(156,39,176,.05); border:2px solid rgba(156,39,176,.12);"></div>
+
+  <!-- Read model zone -->
+  <div class="zone" style="left:40px; top:1220px; width:3400px; height:260px; background:rgba(33,150,243,.05); border:2px solid rgba(33,150,243,.12);"></div>
+
+  <!-- ========== PHASE LABELS ========== -->
+  <div class="phase-label phase-happy"   style="left:60px; top:190px;">✅ Criação da Reserva</div>
+  <div class="phase-label phase-payment" style="left:2180px; top:190px;">💳 Módulo de Pagamento</div>
+  <div class="phase-label phase-happy"   style="left:4000px; top:190px;">✅ Confirmação</div>
+  <div class="phase-label phase-cancel"  style="left:820px; top:550px;">❌ Cancelamento pelo Hóspede</div>
+  <div class="phase-label phase-reject"  style="left:4000px; top:550px;">⚠️ Rejeição (Pagamento Falhou)</div>
+  <div class="phase-label phase-refund"  style="left:4000px; top:870px;">💸 Reembolso</div>
+  <div class="phase-label phase-cqrs"    style="left:60px; top:1210px;">📖 Projeções / Read Models (CQRS)</div>
+
+  <!-- ========================================== -->
+  <!--  ROW 1 — HAPPY PATH: Create Reservation   -->
+  <!-- ========================================== -->
+
+  <!-- N01: Actor - Hóspede -->
+  <div class="node actor" id="n01" style="left:80px; top:240px;">
+    <div class="label">👤 Ator</div>
+    <div class="name">Hóspede</div>
+    <div class="desc">Solicita reserva ou cancelamento</div>
+  </div>
+
+  <!-- N02: Command - Create Reservation -->
+  <div class="node command" id="n02" style="left:300px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Create Reservation</div>
+    <div class="desc">Valida guest, verifica inventário, calcula tarifa</div>
+  </div>
+
+  <!-- N03: Aggregate - Reservation (Pending) -->
+  <div class="node aggregate" id="n03" style="left:520px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reservation</div>
+    <div class="desc">status → Pending</div>
+  </div>
+
+  <!-- N04: Event - ReservationCreated -->
+  <div class="node event" id="n04" style="left:740px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reservation Created</div>
+    <div class="desc">Hotel, RoomType, Guest, Período, Valor</div>
+  </div>
+
+  <!-- N05: Aggregate - RoomTypeInventory (Reserve) -->
+  <div class="node aggregate" id="n05" style="left:960px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">RoomType Inventory</div>
+    <div class="desc">ReserveRooms(qty)</div>
+  </div>
+
+  <!-- N06: Event - RoomsReserved -->
+  <div class="node event" id="n06" style="left:1180px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Rooms Reserved</div>
+    <div class="desc">Quartos bloqueados para o período</div>
+  </div>
+
+  <!-- N07: Policy - Publicar no Bus -->
+  <div class="node policy" id="n07" style="left:1400px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Publicar no Bus</div>
+    <div class="desc">Integration Events: ReservationCreated + InventoryChanged</div>
+  </div>
+
+  <!-- N08: Decision - Branch point after publish -->
+  <div class="node decision" id="n08" style="left:1620px; top:270px;">⑴</div>
+
+  <!-- ========================================== -->
+  <!--  ROW 1 cont. — PAYMENT MODULE             -->
+  <!-- ========================================== -->
+
+  <!-- N09: External - Payments -->
+  <div class="node external" id="n09" style="left:2200px; top:240px;">
+    <div class="label">🟣 Sistema Externo</div>
+    <div class="name">Módulo Payments</div>
+    <div class="desc">Consome ReservationCreated</div>
+  </div>
+
+  <!-- N10: Command - Create Pending Payment -->
+  <div class="node command" id="n10" style="left:2420px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Create Pending Payment</div>
+    <div class="desc">Cria pagamento pendente</div>
+  </div>
+
+  <!-- N11: Aggregate - Payment -->
+  <div class="node aggregate" id="n11" style="left:2640px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Payment</div>
+    <div class="desc">status → Pending</div>
+  </div>
+
+  <!-- N12: External - Gateway -->
+  <div class="node external" id="n12" style="left:2860px; top:240px;">
+    <div class="label">🟣 Sistema Externo</div>
+    <div class="name">Gateway de Pagamento</div>
+    <div class="desc">Processa o pagamento</div>
+  </div>
+
+  <!-- N13: Command - Update Payment Status -->
+  <div class="node command" id="n13" style="left:3080px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Update Payment Status</div>
+    <div class="desc">Processing → ?</div>
+  </div>
+
+  <!-- N14: Event - PaymentStatusChanged -->
+  <div class="node event" id="n14" style="left:3300px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Payment Status Changed</div>
+    <div class="desc">O resultado define o próximo fluxo</div>
+  </div>
+
+  <!-- N15: Policy - Publicar PaymentStatusChanged -->
+  <div class="node policy" id="n15" style="left:3520px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Publicar no Bus</div>
+    <div class="desc">Integration Event: PaymentStatusChanged</div>
+  </div>
+
+  <!-- N16: Decision - Payment result branch -->
+  <div class="node decision" id="n16" style="left:3750px; top:270px;">⑵</div>
+
+  <!-- ========================================== -->
+  <!--  ROW 1 cont. — HAPPY: Payment Completed   -->
+  <!-- ========================================== -->
+
+  <!-- N17: Command - Process Payment (Completed) -->
+  <div class="node command" id="n17" style="left:4020px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Process Payment Status</div>
+    <div class="desc">PaymentStatus = Completed</div>
+  </div>
+
+  <!-- N18: Aggregate - Reservation MarkAsPaid -->
+  <div class="node aggregate" id="n18" style="left:4240px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reservation</div>
+    <div class="desc">MarkAsPaid()</div>
+  </div>
+
+  <!-- N19: Event - ReservationPaid -->
+  <div class="node event" id="n19" style="left:4460px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reservation Paid</div>
+    <div class="desc">status → Paid ✓</div>
+  </div>
+
+  <!-- N20: Policy - Notificar Status -->
+  <div class="node policy" id="n20" style="left:4680px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Notificar Status</div>
+    <div class="desc">ReservationStatusChanged → Bus</div>
+  </div>
+
+  <!-- ========================================== -->
+  <!--  ROW 2 — CANCELLATION BY GUEST            -->
+  <!-- ========================================== -->
+
+  <!-- N21: Command - Cancel Reservation -->
+  <div class="node command" id="n21" style="left:840px; top:600px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Cancel Reservation</div>
+    <div class="desc">Hóspede cancela reserva existente</div>
+  </div>
+
+  <!-- N22: Aggregate - Reservation Cancel -->
+  <div class="node aggregate" id="n22" style="left:1060px; top:600px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reservation</div>
+    <div class="desc">Cancel()</div>
+  </div>
+
+  <!-- N23: Event - ReservationCanceled -->
+  <div class="node event" id="n23" style="left:1280px; top:600px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reservation Canceled</div>
+    <div class="desc">status → Cancelled</div>
+  </div>
+
+  <!-- N24: Policy - Liberar Quartos -->
+  <div class="node policy" id="n24" style="left:1500px; top:600px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">Reação automática ao cancelamento</div>
+  </div>
+
+  <!-- N25: Aggregate - RoomTypeInventory Release -->
+  <div class="node aggregate" id="n25" style="left:1720px; top:600px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">RoomType Inventory</div>
+    <div class="desc">ReleaseRooms(qty)</div>
+  </div>
+
+  <!-- N26: Event - RoomsReleased -->
+  <div class="node event" id="n26" style="left:1940px; top:600px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Rooms Released</div>
+    <div class="desc">TotalReserved -= N</div>
+  </div>
+
+  <!-- N27: Policy - Publicar Cancelamento -->
+  <div class="node policy" id="n27" style="left:2160px; top:600px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Publicar no Bus</div>
+    <div class="desc">ReservationStatusChanged + InventoryChanged</div>
+  </div>
+
+  <!-- ========================================== -->
+  <!--  ROW 3 — REJECTION (Payment Failed)       -->
+  <!-- ========================================== -->
+
+  <!-- N28: Command - Process Payment (Failed) -->
+  <div class="node command" id="n28" style="left:4020px; top:600px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Process Payment Status</div>
+    <div class="desc">PaymentStatus = Failed</div>
+  </div>
+
+  <!-- N29: Aggregate - Reservation Reject -->
+  <div class="node aggregate" id="n29" style="left:4240px; top:600px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reservation</div>
+    <div class="desc">Reject()</div>
+  </div>
+
+  <!-- N30: Event - ReservationCanceled (Rejected) -->
+  <div class="node event" id="n30" style="left:4460px; top:600px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reservation Canceled</div>
+    <div class="desc">status → Rejected</div>
+  </div>
+
+  <!-- N31: Policy - Liberar Quartos (Rejection) -->
+  <div class="node policy" id="n31" style="left:4680px; top:600px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">Inventário restaurado</div>
+  </div>
+
+  <!-- N32: Aggregate - RoomTypeInventory Release (Rejection) -->
+  <div class="node aggregate" id="n32" style="left:4900px; top:600px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">RoomType Inventory</div>
+    <div class="desc">ReleaseRooms(qty)</div>
+  </div>
+
+  <!-- N33: Event - RoomsReleased (Rejection) -->
+  <div class="node event" id="n33" style="left:5120px; top:600px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Rooms Released</div>
+    <div class="desc">Quartos liberados</div>
+  </div>
+
+  <!-- N34: Policy - Publicar (Rejection) -->
+  <div class="node policy" id="n34" style="left:5340px; top:600px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Publicar no Bus</div>
+    <div class="desc">ReservationStatusChanged + InventoryChanged</div>
+  </div>
+
+  <!-- ========================================== -->
+  <!--  ROW 4 — REFUND                           -->
+  <!-- ========================================== -->
+
+  <!-- N35: Command - Process Payment (Refunded) -->
+  <div class="node command" id="n35" style="left:4020px; top:920px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Process Payment Status</div>
+    <div class="desc">PaymentStatus = Refunded</div>
+  </div>
+
+  <!-- N36: Aggregate - Reservation Cancel (refund) -->
+  <div class="node aggregate" id="n36" style="left:4240px; top:920px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reservation</div>
+    <div class="desc">Cancel()</div>
+  </div>
+
+  <!-- N37: Event - ReservationCanceled (Refund) -->
+  <div class="node event" id="n37" style="left:4460px; top:920px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reservation Canceled</div>
+    <div class="desc">status → Cancelled</div>
+  </div>
+
+  <!-- N38: Policy - Liberar Quartos (Refund) -->
+  <div class="node policy" id="n38" style="left:4680px; top:920px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">+ Publicar no bus</div>
+  </div>
+
+  <!-- N39: Event - RoomsReleased (Refund) -->
+  <div class="node event" id="n39" style="left:4900px; top:920px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Rooms Released</div>
+    <div class="desc">Inventário restaurado</div>
+  </div>
+
+  <!-- ========================================== -->
+  <!--  ROW 5 — READ MODELS / CQRS               -->
+  <!-- ========================================== -->
+
+  <!-- N40: Policy - ReservationCreated Consumer -->
+  <div class="node policy" id="n40" style="left:80px; top:1270px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Reservation Created Consumer</div>
+    <div class="desc">Projeta reserva no MongoDB com nome do hotel</div>
+  </div>
+
+  <!-- N41: ReadModel - ReservationModel (create) -->
+  <div class="node readmodel" id="n41" style="left:300px; top:1270px;">
+    <div class="label">📗 Read Model</div>
+    <div class="name">ReservationModel</div>
+    <div class="desc">MongoDB collection: reservations</div>
+  </div>
+
+  <!-- N42: Policy - StatusChanged Consumer -->
+  <div class="node policy" id="n42" style="left:700px; top:1270px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Status Changed Consumer</div>
+    <div class="desc">Atualiza status da reserva no MongoDB</div>
+  </div>
+
+  <!-- N43: ReadModel - ReservationModel (update) -->
+  <div class="node readmodel" id="n43" style="left:920px; top:1270px;">
+    <div class="label">📗 Read Model</div>
+    <div class="name">ReservationModel</div>
+    <div class="desc">Atualiza campo Status + UpdatedAt</div>
+  </div>
+
+  <!-- N44: Policy - InventoryChanged Consumer -->
+  <div class="node policy" id="n44" style="left:1320px; top:1270px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Inventory Changed Consumer</div>
+    <div class="desc">Projeta inventário no MongoDB</div>
+  </div>
+
+  <!-- N45: ReadModel - InventoryModel -->
+  <div class="node readmodel" id="n45" style="left:1540px; top:1270px;">
+    <div class="label">📗 Read Model</div>
+    <div class="name">InventoryModel</div>
+    <div class="desc">MongoDB collection: inventory</div>
+  </div>
+
+  <!-- ========================================== -->
+  <!--  DECISION LABELS                           -->
+  <!-- ========================================== -->
+  <div style="position:absolute; left:1590px; top:345px; font-size:11px; color:#1a1a2e; font-weight:600; z-index:3; background:#fff; padding:3px 8px; border-radius:8px; border:1px solid #ccc;">
+    Reserva criada.<br>O que acontece?
+  </div>
+
+  <div style="position:absolute; left:3710px; top:345px; font-size:11px; color:#1a1a2e; font-weight:600; z-index:3; background:#fff; padding:3px 8px; border-radius:8px; border:1px solid #ccc;">
+    Pagamento processado.<br>Qual o resultado?
+  </div>
+
+  <!-- Branch labels on arrows -->
+  <div style="position:absolute; left:1750px; top:258px; font-size:10px; color:#4CAF50; font-weight:700; z-index:3;">→ Payments (async)</div>
+  <div style="position:absolute; left:1660px; top:568px; font-size:10px; color:#F44336; font-weight:700; z-index:3; transform:rotate(0deg);">↓ Hóspede cancela</div>
+  <div style="position:absolute; left:1610px; top:1230px; font-size:10px; color:#2196F3; font-weight:700; z-index:3;">↓ Projeções CQRS</div>
+
+  <div style="position:absolute; left:3830px; top:232px; font-size:10px; color:#4CAF50; font-weight:700; z-index:3;">✅ Completed</div>
+  <div style="position:absolute; left:3830px; top:588px; font-size:10px; color:#FF9800; font-weight:700; z-index:3;">⚠️ Failed</div>
+  <div style="position:absolute; left:3830px; top:908px; font-size:10px; color:#9C27B0; font-weight:700; z-index:3;">💸 Refunded</div>
+
+  <!-- ========== SVG CONNECTIONS ========== -->
+  <svg class="connections" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrowGreen" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#4CAF50"/>
+      </marker>
+      <marker id="arrowRed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#F44336"/>
+      </marker>
+      <marker id="arrowOrange" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#FF9800"/>
+      </marker>
+      <marker id="arrowPurple" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#9C27B0"/>
+      </marker>
+      <marker id="arrowBlue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#2196F3"/>
+      </marker>
+      <marker id="arrowGray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#999"/>
+      </marker>
+    </defs>
+
+    <!-- === ROW 1: Happy Path horizontal === -->
+    <!-- n01 → n02 -->
+    <line x1="240" y1="290" x2="300" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n02 → n03 -->
+    <line x1="460" y1="290" x2="520" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n03 → n04 -->
+    <line x1="680" y1="290" x2="740" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n04 → n05 -->
+    <line x1="900" y1="290" x2="960" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n05 → n06 -->
+    <line x1="1120" y1="290" x2="1180" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n06 → n07 -->
+    <line x1="1340" y1="290" x2="1400" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n07 → n08 (decision) -->
+    <line x1="1560" y1="295" x2="1620" y2="295" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+    <!-- === DECISION 1 BRANCHES === -->
+    <!-- n08 → n09 (to Payments - green) -->
+    <line x1="1676" y1="295" x2="2200" y2="290" stroke="#4CAF50" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#arrowGreen)"/>
+
+    <!-- n08 → n21 (cancel - red, goes down) -->
+    <path d="M 1648,326 L 1648,650 L 840,650" fill="none" stroke="#F44336" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#arrowRed)"/>
+
+    <!-- n08 → n40 (CQRS - blue, goes down to read models) -->
+    <path d="M 1648,326 L 1648,1100 L 200,1100 L 200,1270" fill="none" stroke="#2196F3" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowBlue)"/>
+
+    <!-- === ROW 1: Payment module === -->
+    <!-- n09 → n10 -->
+    <line x1="2360" y1="290" x2="2420" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n10 → n11 -->
+    <line x1="2580" y1="290" x2="2640" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n11 → n12 -->
+    <line x1="2800" y1="290" x2="2860" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n12 → n13 -->
+    <line x1="3020" y1="290" x2="3080" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n13 → n14 -->
+    <line x1="3240" y1="290" x2="3300" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n14 → n15 -->
+    <line x1="3460" y1="290" x2="3520" y2="290" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+    <!-- n15 → n16 (decision) -->
+    <line x1="3680" y1="295" x2="3750" y2="295" stroke="#999" stroke-width="2" marker-end="url(#arrowGray)"/>
+
+    <!-- === DECISION 2 BRANCHES === -->
+    <!-- n16 → n17 (Completed - green) -->
+    <line x1="3806" y1="295" x2="4020" y2="290" stroke="#4CAF50" stroke-width="2.5" marker-end="url(#arrowGreen)"/>
+
+    <!-- n16 → n28 (Failed - orange, goes down) -->
+    <path d="M 3778,326 L 3778,650 L 4020,650" fill="none" stroke="#FF9800" stroke-width="2.5" marker-end="url(#arrowOrange)"/>
+
+    <!-- n16 → n35 (Refunded - purple, goes further down) -->
+    <path d="M 3778,326 L 3778,970 L 4020,970" fill="none" stroke="#9C27B0" stroke-width="2.5" marker-end="url(#arrowPurple)"/>
+
+    <!-- === ROW 1: Confirmation === -->
+    <!-- n17 → n18 -->
+    <line x1="4180" y1="290" x2="4240" y2="290" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    <!-- n18 → n19 -->
+    <line x1="4400" y1="290" x2="4460" y2="290" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowGreen)"/>
+    <!-- n19 → n20 -->
+    <line x1="4620" y1="290" x2="4680" y2="290" stroke="#4CAF50" stroke-width="2" marker-end="url(#arrowGreen)"/>
+
+    <!-- n20 feeds CQRS (status changed) -->
+    <path d="M 4760,340 L 4760,1150 L 780,1150 L 780,1270" fill="none" stroke="#2196F3" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowBlue)"/>
+
+    <!-- === ROW 2: Cancellation === -->
+    <!-- n21 → n22 -->
+    <line x1="1000" y1="650" x2="1060" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- n22 → n23 -->
+    <line x1="1220" y1="650" x2="1280" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- n23 → n24 -->
+    <line x1="1440" y1="650" x2="1500" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- n24 → n25 -->
+    <line x1="1660" y1="650" x2="1720" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- n25 → n26 -->
+    <line x1="1880" y1="650" x2="1940" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+    <!-- n26 → n27 -->
+    <line x1="2100" y1="650" x2="2160" y2="650" stroke="#F44336" stroke-width="2" marker-end="url(#arrowRed)"/>
+
+    <!-- n27 feeds CQRS -->
+    <path d="M 2240,700 L 2240,1150 L 780,1150" fill="none" stroke="#2196F3" stroke-width="2" stroke-dasharray="6,4"/>
+    <path d="M 2320,700 L 2320,1180 L 1400,1180 L 1400,1270" fill="none" stroke="#2196F3" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrowBlue)"/>
+
+    <!-- === ROW 3: Rejection === -->
+    <!-- n28 → n29 -->
+    <line x1="4180" y1="650" x2="4240" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <!-- n29 → n30 -->
+    <line x1="4400" y1="650" x2="4460" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <!-- n30 → n31 -->
+    <line x1="4620" y1="650" x2="4680" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <!-- n31 → n32 -->
+    <line x1="4840" y1="650" x2="4900" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <!-- n32 → n33 -->
+    <line x1="5060" y1="650" x2="5120" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+    <!-- n33 → n34 -->
+    <line x1="5280" y1="650" x2="5340" y2="650" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+    <!-- === ROW 4: Refund === -->
+    <!-- n35 → n36 -->
+    <line x1="4180" y1="970" x2="4240" y2="970" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrowPurple)"/>
+    <!-- n36 → n37 -->
+    <line x1="4400" y1="970" x2="4460" y2="970" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrowPurple)"/>
+    <!-- n37 → n38 -->
+    <line x1="4620" y1="970" x2="4680" y2="970" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrowPurple)"/>
+    <!-- n38 → n39 -->
+    <line x1="4840" y1="970" x2="4900" y2="970" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+    <!-- === ROW 5: Read Model connections === -->
+    <!-- n40 → n41 -->
+    <line x1="240" y1="1320" x2="300" y2="1320" stroke="#2196F3" stroke-width="2" marker-end="url(#arrowBlue)"/>
+    <!-- n42 → n43 -->
+    <line x1="860" y1="1320" x2="920" y2="1320" stroke="#2196F3" stroke-width="2" marker-end="url(#arrowBlue)"/>
+    <!-- n44 → n45 -->
+    <line x1="1480" y1="1320" x2="1540" y2="1320" stroke="#2196F3" stroke-width="2" marker-end="url(#arrowBlue)"/>
+
+    <!-- Rejection & Refund also feed CQRS -->
+    <path d="M 5420,700 L 5420,1180 L 1400,1180" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <path d="M 4980,1020 L 4980,1180 L 1400,1180" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+  </svg>
+
+  <!-- ========== LOWER SECTION: Aggregates & Integration ========== -->
+  <div style="position:relative; margin-top:1380px;">
+
+    <div class="section-title">🟡 Agregados & Ciclos de Vida</div>
+
+    <div style="display:flex; gap: 30px; flex-wrap: wrap; margin-bottom: 40px;">
+      <div class="lifecycle">
+        <h3>🟡 Reservation (EventSourced)</h3>
+        <code>
+          <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+          →  <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pending</span>
+          → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Paid</span>
+          → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Refunded</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          ├→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Cancelled</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          └→ <span style="background:#FFCCBC;padding:2px 8px;border-radius:4px;font-weight:700;">Rejected</span>
+        </code>
+      </div>
+
+      <div class="lifecycle">
+        <h3>🟡 RoomTypeInventory (EventSourced)</h3>
+        <code>
+          <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+          → (Total=N, Reserved=0)<br><br>
+          <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;">ReserveRooms(qty)</span>
+          → Reserved += qty<br>
+          <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;">ReleaseRooms(qty)</span>
+          → Reserved -= qty
+        </code>
+      </div>
+
+      <div class="lifecycle">
+        <h3>🟡 Payment (AggregateRoot)</h3>
+        <code>
+          <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+          → <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pending</span>
+          → <span style="background:#BBDEFB;padding:2px 8px;border-radius:4px;font-weight:700;">Processing</span>
+          → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Completed</span>
+          → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Refunded</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          └→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Failed</span>
+        </code>
+      </div>
+
+      <div class="lifecycle">
+        <h3>🟡 GuestInfo (Read Replica)</h3>
+        <code>
+          Projeção local do módulo Guests<br>
+          Campos: Email, FullName
+        </code>
+      </div>
+    </div>
+
+    <!-- Integration Events Table -->
+    <div class="section-title">🔗 Comunicação entre Módulos (Integration Events via MassTransit)</div>
+
+    <table class="int-table">
+      <thead>
+        <tr>
+          <th>Evento de Integração</th>
+          <th>Produtor</th>
+          <th>Consumidores</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>ReservationCreated</strong></td>
+          <td>Reservations</td>
+          <td>Payments (cria pagamento) · Reservations/Consumers (projeta no MongoDB)</td>
+        </tr>
+        <tr>
+          <td><strong>ReservationStatusChanged</strong></td>
+          <td>Reservations</td>
+          <td>Reservations/Consumers (atualiza status no MongoDB)</td>
+        </tr>
+        <tr>
+          <td><strong>InventoryChanged</strong></td>
+          <td>Reservations</td>
+          <td>Reservations/Consumers (atualiza inventário no MongoDB)</td>
+        </tr>
+        <tr>
+          <td><strong>PaymentStatusChanged</strong></td>
+          <td>Payments</td>
+          <td>Reservations (atualiza status: Paid / Rejected / Cancelled)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- External Systems -->
+    <div class="section-title">🟣 Sistemas Externos consultados pelo módulo de Reservas</div>
+    <div style="display:flex; gap:16px; margin-bottom: 40px;">
+      <div class="node external" style="position:relative; --rot:-0.5deg; width: 200px;">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Catalog</div>
+        <div class="desc">ICatalogHotelService → info do hotel<br>ICatalogRateService → cálculo de tarifa</div>
+      </div>
+      <div class="node external" style="position:relative; --rot:0.4deg; width: 200px;">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Payments</div>
+        <div class="desc">Comunicação assíncrona via MassTransit (pub/sub)</div>
+      </div>
+      <div class="node external" style="position:relative; --rot:-0.7deg; width: 200px;">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Guests</div>
+        <div class="desc">Dados replicados localmente como GuestInfo (ACL)</div>
+      </div>
+      <div class="node external" style="position:relative; --rot:0.6deg; width: 200px;">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Gateway de Pagamento</div>
+        <div class="desc">Implícito — atualiza status do Payment externamente</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
+
