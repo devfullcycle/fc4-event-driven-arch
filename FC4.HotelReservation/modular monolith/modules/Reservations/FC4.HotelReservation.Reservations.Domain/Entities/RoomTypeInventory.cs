@@ -1,9 +1,10 @@
 using Ardalis.GuardClauses;
+using FC4.HotelReservation.Reservations.Domain.Events;
 using FC4.HotelReservation.Shared.Domain;
 
 namespace FC4.HotelReservation.Reservations.Domain.Entities;
 
-public class RoomTypeInventory : AggregateRoot
+public class RoomTypeInventory : EventSourced
 {
     public Guid HotelId { get; private set; }
     public Guid RoomTypeId { get; private set; }
@@ -13,9 +14,12 @@ public class RoomTypeInventory : AggregateRoot
 
     private RoomTypeInventory()
     {
+        Register<RoomTypeInventoryCreatedEvent>(OnRoomTypeInventoryCreated);
+        Register<RoomsReservedEvent>(OnRoomsReserved);
+        Register<RoomsReleasedEvent>(OnRoomsReleased);
     } // For EF Core
 
-    public RoomTypeInventory(
+    internal RoomTypeInventory(
         Guid id,
         Guid hotelId,
         Guid roomTypeId,
@@ -36,13 +40,18 @@ public class RoomTypeInventory : AggregateRoot
         DateTime date,
         int totalInventory)
     {
-        return new RoomTypeInventory(
+        Guard.Against.Default(hotelId, nameof(hotelId));
+        Guard.Against.Default(roomTypeId, nameof(roomTypeId));
+        Guard.Against.Default(date, nameof(date));
+        Guard.Against.Negative(totalInventory, nameof(totalInventory));
+        var roomTypeInventory = new RoomTypeInventory();
+        roomTypeInventory.RaiseEvent(new RoomTypeInventoryCreatedEvent(
             Guid.NewGuid(),
             hotelId,
             roomTypeId,
             date,
-            totalInventory,
-            0);
+            totalInventory));
+        return roomTypeInventory;
     }
 
     public int AvailableInventory => TotalInventory - TotalReserved;
@@ -59,7 +68,12 @@ public class RoomTypeInventory : AggregateRoot
         if (!CanReserve(quantity))
             throw new InvalidOperationException("Insufficient inventory available");
 
-        TotalReserved += quantity;
+        RaiseEvent(new RoomsReservedEvent(
+            Id,
+            HotelId,
+            RoomTypeId,
+            Date,
+            quantity));
     }
 
     public void ReleaseRooms(int quantity)
@@ -69,6 +83,31 @@ public class RoomTypeInventory : AggregateRoot
         if (quantity > TotalReserved)
             throw new InvalidOperationException("Cannot release more rooms than reserved");
 
-        TotalReserved -= quantity;
+        RaiseEvent(new RoomsReleasedEvent(
+            Id,
+            HotelId,
+            RoomTypeId,
+            Date,
+            quantity));
+    }
+
+    private void OnRoomTypeInventoryCreated(RoomTypeInventoryCreatedEvent e)
+    {
+        Id = e.InventoryId;
+        HotelId = e.HotelId;
+        RoomTypeId = e.RoomTypeId;
+        Date = e.Date;
+        TotalInventory = e.TotalInventory;
+        TotalReserved = 0;
+    }
+
+    private void OnRoomsReserved(RoomsReservedEvent e)
+    {
+        TotalReserved += e.Quantity;
+    }
+
+    private void OnRoomsReleased(RoomsReleasedEvent e)
+    {
+        TotalReserved -= e.Quantity;
     }
 }

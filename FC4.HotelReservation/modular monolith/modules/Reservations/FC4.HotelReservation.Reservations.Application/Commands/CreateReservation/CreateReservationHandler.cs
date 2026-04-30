@@ -1,0 +1,57 @@
+using FC4.HotelReservation.Reservations.Application.Gateways;
+using FC4.HotelReservation.Reservations.Domain.Entities;
+using FC4.HotelReservation.Reservations.Domain.Repositories;
+using FC4.HotelReservation.Reservations.Domain.ValueObjects;
+using FC4.HotelReservation.Shared.Application;
+
+namespace FC4.HotelReservation.Reservations.Application.Commands.CreateReservation;
+
+public class CreateReservationHandler(
+    IReservationRepository reservationRepository,
+    IRoomTypeInventoryRepository roomTypeInventoryRepository,
+    ICatalogRateService rateService,
+    IReservationGuestRepository guestRepository,
+    IUnitOfWork unitOfWork) : ICreateReservationHandler
+{
+    public async Task<CreateReservationResult> Handle(
+        CreateReservationCommand request,
+        CancellationToken cancellationToken)
+    {
+        _ = await guestRepository.GetByIdAsync(request.GuestId, cancellationToken)
+            ?? throw new InvalidOperationException("Guest not found");
+        
+        var period = new DateRange(request.StartDate, request.EndDate);
+        // Lock pessimista: bloquear os registros de disponibilidade até que a transação seja comitada
+        var inventories = await roomTypeInventoryRepository.GetInventoryForPeriodAsync(
+            request.HotelId, request.RoomTypeId, period, cancellationToken);
+        
+        if (!HasSufficientInventory(inventories, period, request.RoomQuantity))
+        {
+            throw new InvalidOperationException("Not enough rooms available for the requested period");
+        }
+
+        var totalAmount = await rateService.CalculateTotalAmountAsync(
+            request.HotelId, request.RoomTypeId, period, request.RoomQuantity, cancellationToken);
+        var reservation = request.ToReservation(totalAmount);
+        unitOfWork.Register(reservation);
+
+        foreach (var inventory in inventories)
+        {
+            inventory.ReserveRooms(request.RoomQuantity);
+        }
+        await unitOfWork.CommitAsync(cancellationToken);
+        return new CreateReservationResult(reservation.Id);
+    }
+
+    private static bool HasSufficientInventory(
+        List<RoomTypeInventory> inventories,
+        DateRange period,
+        int roomQuantity)
+    {
+        var daysInPeriod = period.GetDates().ToList();
+        var inventoryDict = inventories.ToDictionary(i => i.Date.Date);
+        return daysInPeriod.All(date =>
+            inventoryDict.TryGetValue(date, out var inventory) &&
+            inventory.CanReserve(roomQuantity));
+    }
+}

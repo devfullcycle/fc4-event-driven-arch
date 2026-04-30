@@ -9,6 +9,8 @@ public static class ServiceCollectionExtension
     public static IServiceCollection AddReservationsAdapters(
         this IServiceCollection services)
     {
-        return services.AddScoped<ICatalogRateService, CatalogRateService>();
+        services.AddScoped<ICatalogRateService, CatalogRateService>();
+        services.AddScoped<ICatalogHotelService, CatalogHotelService>();
+        return services;
     }
 }

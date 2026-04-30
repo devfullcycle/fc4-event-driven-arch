@@ -10,6 +10,4 @@ public interface IRoomTypeInventoryRepository
         Guid roomTypeId, 
         DateRange period, 
         CancellationToken cancellationToken);
-    
-    Task UpdateAsync(RoomTypeInventory inventory, CancellationToken cancellationToken);
 }

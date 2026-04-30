@@ -1,3 +1,4 @@
+using FC4.HotelReservation.Reservations.Domain.Enums;
 using FC4.HotelReservation.Reservations.Domain.ValueObjects;
 using FC4.HotelReservation.Shared.Domain;
 
@@ -8,11 +9,13 @@ public class ReservationCanceledEvent(
     Guid hotelId,
     Guid roomTypeId,
     DateRange stayPeriod,
-    int roomQuantity) : DomainEvent
+    int roomQuantity,
+    ReservationStatus status) : DomainEvent
 {
     public Guid ReservationId { get; } = reservationId;
     public Guid HotelId { get; } = hotelId;
     public Guid RoomTypeId { get; } = roomTypeId;
     public DateRange StayPeriod { get; } = stayPeriod;
     public int RoomQuantity { get; } = roomQuantity;
+    public ReservationStatus Status { get; } = status;
 }

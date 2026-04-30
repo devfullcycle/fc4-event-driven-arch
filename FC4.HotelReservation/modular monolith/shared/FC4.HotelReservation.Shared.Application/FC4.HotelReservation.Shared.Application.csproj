@@ -9,6 +9,11 @@
     <ItemGroup>
         <PackageReference Include="MassTransit" Version="8.5.1" />
         <PackageReference Include="MassTransit.SqlTransport.PostgreSQL" Version="8.5.1" />
+        <PackageReference Include="MassTransit.EntityFrameworkCore" Version="8.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FC4.HotelReservation.Shared.Domain\FC4.HotelReservation.Shared.Domain.csproj" />
     </ItemGroup>
 
 </Project>

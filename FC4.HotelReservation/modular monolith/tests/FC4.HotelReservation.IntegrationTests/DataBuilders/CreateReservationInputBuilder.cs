@@ -1,5 +1,5 @@
 using Bogus;
-using FC4.HotelReservation.Reservations.Application.UseCases.Reservation.CreateReservation;
+using FC4.HotelReservation.Reservations.Application.Commands.CreateReservation;
 
 namespace FC4.HotelReservation.IntegrationTests.DataBuilders;
 
@@ -51,8 +51,8 @@ public class CreateReservationInputBuilder
         return this;
     }
 
-    public CreateReservationInput Build()
+    public CreateReservationCommand Build()
     {
-        return new CreateReservationInput(_hotelId, _roomTypeId, _startDate, _endDate, _guestId, _roomQuantity);
+        return new CreateReservationCommand(_hotelId, _roomTypeId, _startDate, _endDate, _guestId, _roomQuantity);
     }
 }

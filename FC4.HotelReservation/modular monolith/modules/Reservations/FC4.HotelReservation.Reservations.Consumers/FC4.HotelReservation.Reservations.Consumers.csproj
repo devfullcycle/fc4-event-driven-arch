@@ -7,8 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\Payments\FC4.HotelReservation.Payments.Events\FC4.HotelReservation.Payments.Events.csproj" />
-      <ProjectReference Include="..\FC4.HotelReservation.Reservations.Application\FC4.HotelReservation.Reservations.Application.csproj" />
+        <ProjectReference Include="..\..\Payments\FC4.HotelReservation.Payments.Events\FC4.HotelReservation.Payments.Events.csproj"/>
+        <ProjectReference Include="..\FC4.HotelReservation.Reservations.Application\FC4.HotelReservation.Reservations.Application.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MongoDB.Driver" Version="3.7.1"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5"/>
     </ItemGroup>
 
 </Project>

@@ -33,6 +33,8 @@ builder.Services
     .AddPaymentsRepositories()
     .AddGuestsRepositories()
     .AddCatalogRepositories()
+    .AddReservationsMongoDb(builder.Configuration)
+    .AddMongoDbReadDatabase()
     .AddPostgresMigrationHostedService(options =>
     {
         options.CreateDatabase = false;
@@ -40,6 +42,16 @@ builder.Services
     })
     .AddMassTransit(configurator =>
     {
+        configurator.AddEntityFrameworkOutbox<HotelDbContext>(o =>
+        {
+            o.UsePostgres();
+            o.UseBusOutbox();
+            o.QueryDelay = TimeSpan.FromSeconds(2);
+        });
+        configurator.AddConfigureEndpointsCallback((context, name, cfg) =>
+        {
+            cfg.UseEntityFrameworkOutbox<HotelDbContext>(context);
+        });
         configurator
             .AddPaymentConsumers()
             .AddReservationConsumers()
