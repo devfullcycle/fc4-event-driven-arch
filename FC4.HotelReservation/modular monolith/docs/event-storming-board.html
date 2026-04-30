@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Storming — Hotel Reservation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f5f0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: auto; }
+  
+  .board {
+    width: 4800px;
+    min-height: 100vh;
+    padding: 40px 60px;
+    position: relative;
+    background: 
+      linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+      linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #1a1a2e;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 40px;
+  }
+
+  /* Swim lanes */
+  .lane {
+    position: relative;
+    margin-bottom: 50px;
+    padding: 24px 20px 20px;
+    border-radius: 16px;
+    min-height: 260px;
+  }
+  .lane-label {
+    position: absolute;
+    top: -16px;
+    left: 24px;
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 20px;
+    z-index: 2;
+  }
+  .lane-happy { background: rgba(76,175,80,.06); border: 2px solid rgba(76,175,80,.15); }
+  .lane-cancel { background: rgba(244,67,54,.05); border: 2px solid rgba(244,67,54,.12); }
+  .lane-reject { background: rgba(255,152,0,.05); border: 2px solid rgba(255,152,0,.12); }
+  .lane-refund { background: rgba(156,39,176,.05); border: 2px solid rgba(156,39,176,.12); }
+  .lane-readmodel { background: rgba(33,150,243,.05); border: 2px solid rgba(33,150,243,.12); }
+
+  .lane-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: nowrap;
+    padding-top: 16px;
+  }
+
+  /* Sticky notes */
+  .sticky {
+    width: 156px;
+    min-height: 100px;
+    padding: 14px 12px;
+    border-radius: 4px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    box-shadow: 2px 3px 8px rgba(0,0,0,.12);
+    position: relative;
+    flex-shrink: 0;
+    transform: rotate(var(--rot, 0deg));
+    transition: transform .15s;
+  }
+  .sticky:hover { transform: scale(1.06) rotate(0deg); z-index: 10; }
+  .sticky .label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    opacity: .55;
+    margin-bottom: 6px;
+  }
+  .sticky .name {
+    font-weight: 700;
+    font-size: 13px;
+    word-break: break-word;
+  }
+  .sticky .desc {
+    margin-top: 6px;
+    font-size: 11px;
+    opacity: .7;
+  }
+
+  /* Colors — Event Storming standard */
+  .event    { background: #FF8A24; color: #fff; }
+  .command  { background: #5C9DFF; color: #fff; }
+  .actor    { background: #FFE066; color: #1a1a2e; }
+  .aggregate{ background: #FFD54F; color: #1a1a2e; border: 3px solid #FFC107; }
+  .policy   { background: #CE93D8; color: #1a1a2e; }
+  .external { background: #F48FB1; color: #1a1a2e; }
+  .readmodel{ background: #81D4FA; color: #1a1a2e; }
+  .hotspot  { background: #E53935; color: #fff; }
+
+  /* Arrow connectors */
+  .arrow {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    font-size: 28px;
+    color: #999;
+    padding: 0 2px;
+    align-self: center;
+  }
+  .arrow-down {
+    font-size: 22px;
+    color: #999;
+    text-align: center;
+    margin: -6px 0;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #555;
+  }
+  .legend-color {
+    width: 22px;
+    height: 22px;
+    border-radius: 3px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,.15);
+  }
+
+  /* Aggregate lifecycle */
+  .lifecycle {
+    background: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-bottom: 40px;
+    display: inline-block;
+  }
+  .lifecycle h3 { font-size: 15px; margin-bottom: 12px; color: #1a1a2e; }
+  .lifecycle code { font-size: 13px; line-height: 1.8; }
+
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin: 40px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Integration events table */
+  .int-table {
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+  .int-table th {
+    background: #1a1a2e;
+    color: #fff;
+    padding: 10px 18px;
+    text-align: left;
+  }
+  .int-table td {
+    padding: 10px 18px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .int-table tr:nth-child(even) td { background: #f9f9f9; }
+</style>
+</head>
+<body>
+<div class="board">
+
+  <div class="title">🟧 Event Storming — Módulo de Reservas</div>
+  <div class="subtitle">Engenharia reversa do monólito modular FC4.HotelReservation &nbsp;|&nbsp; Miro-style Board</div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#FFE066"></div>Ator</div>
+    <div class="legend-item"><div class="legend-color" style="background:#5C9DFF"></div>Comando</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FF8A24"></div>Evento de Domínio</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFD54F;border:3px solid #FFC107"></div>Agregado</div>
+    <div class="legend-item"><div class="legend-color" style="background:#CE93D8"></div>Política / Processo</div>
+    <div class="legend-item"><div class="legend-color" style="background:#F48FB1"></div>Sistema Externo</div>
+    <div class="legend-item"><div class="legend-color" style="background:#81D4FA"></div>Read Model</div>
+  </div>
+
+  <!-- ==================== HAPPY PATH ==================== -->
+  <div class="lane lane-happy">
+    <div class="lane-label">✅ Fluxo Principal (Happy Path)</div>
+    <div class="lane-content">
+
+      <!-- Actor -->
+      <div class="sticky actor" style="--rot:-1.2deg">
+        <div class="label">👤 Ator</div>
+        <div class="name">Hóspede</div>
+        <div class="desc">Solicita a criação de uma reserva</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Command: Create -->
+      <div class="sticky command" style="--rot:0.6deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Create Reservation</div>
+        <div class="desc">Valida guest, verifica inventário, calcula tarifa</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Aggregate: Reservation -->
+      <div class="sticky aggregate" style="--rot:-0.5deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Reservation</div>
+        <div class="desc">status: Pending</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Event: ReservationCreated -->
+      <div class="sticky event" style="--rot:1deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Reservation Created</div>
+        <div class="desc">Hotel, RoomType, Guest, Período, Valor</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Aggregate: RoomTypeInventory -->
+      <div class="sticky aggregate" style="--rot:-0.8deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">RoomType Inventory</div>
+        <div class="desc">TotalReserved += N</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Event: RoomsReserved -->
+      <div class="sticky event" style="--rot:0.5deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Rooms Reserved</div>
+        <div class="desc">Quartos bloqueados para o período</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Policy: Publish -->
+      <div class="sticky policy" style="--rot:-1deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Publicar no Bus</div>
+        <div class="desc">Integration Event: ReservationCreated</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- External: Payments -->
+      <div class="sticky external" style="--rot:0.7deg">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Payments</div>
+        <div class="desc">Consome ReservationCreated</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Command: CreatePending -->
+      <div class="sticky command" style="--rot:-0.4deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Create Pending Payment</div>
+        <div class="desc">Cria pagamento pendente</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Aggregate: Payment -->
+      <div class="sticky aggregate" style="--rot:0.9deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Payment</div>
+        <div class="desc">status: Pending</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- External: Payment Gateway -->
+      <div class="sticky external" style="--rot:-0.6deg">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Gateway de Pagamento</div>
+        <div class="desc">Processa o pagamento</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Command: Update Payment -->
+      <div class="sticky command" style="--rot:0.3deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Update Payment Status</div>
+        <div class="desc">Processing → Completed</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Event: PaymentStatusChanged -->
+      <div class="sticky event" style="--rot:-0.7deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Payment Status Changed</div>
+        <div class="desc">Completed ✓</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Policy -->
+      <div class="sticky policy" style="--rot:0.4deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Publicar no Bus</div>
+        <div class="desc">Integration Event: PaymentStatusChanged</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Command: ProcessPayment -->
+      <div class="sticky command" style="--rot:-0.3deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Process Payment Status</div>
+        <div class="desc">Consumer no módulo Reservations</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Aggregate: Reservation -->
+      <div class="sticky aggregate" style="--rot:0.8deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Reservation</div>
+        <div class="desc">MarkAsPaid()</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Event: ReservationPaid -->
+      <div class="sticky event" style="--rot:-1deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Reservation Paid</div>
+        <div class="desc">status: Paid ✓</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <!-- Policy: Status Changed -->
+      <div class="sticky policy" style="--rot:0.5deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Notificar Status</div>
+        <div class="desc">ReservationStatusChanged → Bus</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== CANCELLATION ==================== -->
+  <div class="lane lane-cancel">
+    <div class="lane-label">❌ Fluxo de Cancelamento</div>
+    <div class="lane-content">
+
+      <div class="sticky actor" style="--rot:0.8deg">
+        <div class="label">👤 Ator</div>
+        <div class="name">Hóspede</div>
+        <div class="desc">Solicita cancelamento</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky command" style="--rot:-0.5deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Cancel Reservation</div>
+        <div class="desc">Cancela reserva existente</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky aggregate" style="--rot:0.6deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Reservation</div>
+        <div class="desc">Cancel()</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:-0.8deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Reservation Canceled</div>
+        <div class="desc">status: Cancelled</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:0.4deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Liberar Quartos</div>
+        <div class="desc">Reação ao cancelamento</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky aggregate" style="--rot:-0.6deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">RoomType Inventory</div>
+        <div class="desc">ReleaseRooms(qty)</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:0.9deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Rooms Released</div>
+        <div class="desc">TotalReserved -= N</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:-0.4deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Publicar no Bus</div>
+        <div class="desc">ReservationStatusChanged + InventoryChanged</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== REJECTION (Payment Failed) ==================== -->
+  <div class="lane lane-reject">
+    <div class="lane-label">⚠️ Fluxo de Rejeição (Pagamento Falhou)</div>
+    <div class="lane-content">
+
+      <div class="sticky external" style="--rot:-0.7deg">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Payments</div>
+        <div class="desc">Pagamento falhou</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:0.5deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Payment Status Changed</div>
+        <div class="desc">Failed ✗</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:-0.3deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Consumer reage</div>
+        <div class="desc">PaymentStatusChangedConsumer</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky command" style="--rot:0.7deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Process Payment Status</div>
+        <div class="desc">PaymentStatus = Failed</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky aggregate" style="--rot:-0.5deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Reservation</div>
+        <div class="desc">Reject()</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:0.8deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Reservation Canceled</div>
+        <div class="desc">status: Rejected</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:-0.6deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Liberar Quartos</div>
+        <div class="desc">Inventário restaurado</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky aggregate" style="--rot:0.4deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">RoomType Inventory</div>
+        <div class="desc">ReleaseRooms(qty)</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:-0.9deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Rooms Released</div>
+        <div class="desc">Quartos liberados</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== REFUND ==================== -->
+  <div class="lane lane-refund">
+    <div class="lane-label">💸 Fluxo de Reembolso</div>
+    <div class="lane-content">
+
+      <div class="sticky external" style="--rot:0.6deg">
+        <div class="label">🟣 Sistema Externo</div>
+        <div class="name">Módulo Payments</div>
+        <div class="desc">Pagamento reembolsado</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:-0.4deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Payment Status Changed</div>
+        <div class="desc">Refunded</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:0.7deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Consumer reage</div>
+        <div class="desc">PaymentStatusChangedConsumer</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky command" style="--rot:-0.8deg">
+        <div class="label">📘 Comando</div>
+        <div class="name">Process Payment Status</div>
+        <div class="desc">PaymentStatus = Refunded</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky aggregate" style="--rot:0.3deg">
+        <div class="label">🟡 Agregado</div>
+        <div class="name">Reservation</div>
+        <div class="desc">Cancel()</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:-0.5deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Reservation Canceled</div>
+        <div class="desc">status: Cancelled</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky policy" style="--rot:0.9deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Liberar Quartos</div>
+        <div class="desc">+ Publicar no bus</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky event" style="--rot:-0.7deg">
+        <div class="label">🟧 Evento</div>
+        <div class="name">Rooms Released</div>
+        <div class="desc">Inventário restaurado</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== READ MODELS (CQRS) ==================== -->
+  <div class="lane lane-readmodel">
+    <div class="lane-label">📖 Projeções / Read Models (CQRS)</div>
+    <div class="lane-content">
+
+      <div class="sticky policy" style="--rot:0.5deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Reservation Created Consumer</div>
+        <div class="desc">Projeta reserva no MongoDB com nome do hotel</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky readmodel" style="--rot:-0.6deg">
+        <div class="label">📗 Read Model</div>
+        <div class="name">ReservationModel</div>
+        <div class="desc">MongoDB collection: reservations</div>
+      </div>
+
+      <div style="width:40px"></div>
+
+      <div class="sticky policy" style="--rot:-0.4deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Status Changed Consumer</div>
+        <div class="desc">Atualiza status da reserva no MongoDB</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky readmodel" style="--rot:0.7deg">
+        <div class="label">📗 Read Model</div>
+        <div class="name">ReservationModel</div>
+        <div class="desc">Atualiza campo Status + UpdatedAt</div>
+      </div>
+
+      <div style="width:40px"></div>
+
+      <div class="sticky policy" style="--rot:0.3deg">
+        <div class="label">⚙️ Política</div>
+        <div class="name">Inventory Changed Consumer</div>
+        <div class="desc">Projeta inventário no MongoDB</div>
+      </div>
+      <div class="arrow">→</div>
+
+      <div class="sticky readmodel" style="--rot:-0.8deg">
+        <div class="label">📗 Read Model</div>
+        <div class="name">InventoryModel</div>
+        <div class="desc">MongoDB collection: inventory</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== AGGREGATES & LIFECYCLE ==================== -->
+  <div class="section-title">🟡 Agregados & Ciclos de Vida</div>
+
+  <div style="display:flex; gap: 30px; flex-wrap: wrap; margin-bottom: 40px;">
+    <div class="lifecycle">
+      <h3>🟡 Reservation (EventSourced)</h3>
+      <code>
+        <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+        →  <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pending</span>
+        → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Paid</span>
+        → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Refunded</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        ├→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Cancelled</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        └→ <span style="background:#FFCCBC;padding:2px 8px;border-radius:4px;font-weight:700;">Rejected</span>
+      </code>
+    </div>
+
+    <div class="lifecycle">
+      <h3>🟡 RoomTypeInventory (EventSourced)</h3>
+      <code>
+        <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+        → (Total=N, Reserved=0)<br><br>
+        <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;">ReserveRooms(qty)</span>
+        → Reserved += qty<br>
+        <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;">ReleaseRooms(qty)</span>
+        → Reserved -= qty
+      </code>
+    </div>
+
+    <div class="lifecycle">
+      <h3>🟡 Payment (AggregateRoot)</h3>
+      <code>
+        <span style="background:#E8F5E9;padding:2px 8px;border-radius:4px;">Create</span>
+        → <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pending</span>
+        → <span style="background:#BBDEFB;padding:2px 8px;border-radius:4px;font-weight:700;">Processing</span>
+        → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Completed</span>
+        → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Refunded</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        └→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Failed</span>
+      </code>
+    </div>
+
+    <div class="lifecycle">
+      <h3>🟡 GuestInfo (Read Replica)</h3>
+      <code>
+        Projeção local do módulo Guests<br>
+        Campos: Email, FullName
+      </code>
+    </div>
+  </div>
+
+  <!-- ==================== INTEGRATION EVENTS TABLE ==================== -->
+  <div class="section-title">🔗 Comunicação entre Módulos (Integration Events via MassTransit)</div>
+
+  <table class="int-table">
+    <thead>
+      <tr>
+        <th>Evento de Integração</th>
+        <th>Produtor</th>
+        <th>Consumidores</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>ReservationCreated</strong></td>
+        <td>Reservations</td>
+        <td>Payments (cria pagamento) · Reservations/Consumers (projeta no MongoDB)</td>
+      </tr>
+      <tr>
+        <td><strong>ReservationStatusChanged</strong></td>
+        <td>Reservations</td>
+        <td>Reservations/Consumers (atualiza status no MongoDB)</td>
+      </tr>
+      <tr>
+        <td><strong>InventoryChanged</strong></td>
+        <td>Reservations</td>
+        <td>Reservations/Consumers (atualiza inventário no MongoDB)</td>
+      </tr>
+      <tr>
+        <td><strong>PaymentStatusChanged</strong></td>
+        <td>Payments</td>
+        <td>Reservations (atualiza status: Paid / Rejected / Cancelled)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ==================== EXTERNAL SYSTEMS ==================== -->
+  <div class="section-title">🟣 Sistemas Externos consultados pelo módulo de Reservas</div>
+  <div style="display:flex; gap:16px; margin-bottom: 40px;">
+    <div class="sticky external" style="--rot:-0.5deg; width: 200px;">
+      <div class="label">🟣 Sistema Externo</div>
+      <div class="name">Módulo Catalog</div>
+      <div class="desc">ICatalogHotelService → info do hotel<br>ICatalogRateService → cálculo de tarifa</div>
+    </div>
+    <div class="sticky external" style="--rot:0.4deg; width: 200px;">
+      <div class="label">🟣 Sistema Externo</div>
+      <div class="name">Módulo Payments</div>
+      <div class="desc">Comunicação assíncrona via MassTransit (pub/sub)</div>
+    </div>
+    <div class="sticky external" style="--rot:-0.7deg; width: 200px;">
+      <div class="label">🟣 Sistema Externo</div>
+      <div class="name">Módulo Guests</div>
+      <div class="desc">Dados replicados localmente como GuestInfo (ACL)</div>
+    </div>
+    <div class="sticky external" style="--rot:0.6deg; width: 200px;">
+      <div class="label">🟣 Sistema Externo</div>
+      <div class="name">Gateway de Pagamento</div>
+      <div class="desc">Implícito — atualiza status do Payment externamente</div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
+

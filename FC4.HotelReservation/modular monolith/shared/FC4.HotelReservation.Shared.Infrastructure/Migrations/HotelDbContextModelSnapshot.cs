@@ -17,35 +17,12 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.19")
+                .HasAnnotation("ProductVersion", "9.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Guest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("first_name");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("last_name");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("guests", (string)null);
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.Hotel", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -60,82 +37,16 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("hotels", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Name = "Grand Hotel Plaza"
+                        });
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Payment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("ProcessedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_at");
-
-                    b.Property<Guid>("ReservationId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("reservation_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.Property<string>("TransactionId")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("transaction_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ReservationId");
-
-                    b.ToTable("payments", (string)null);
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Reservation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<Guid>("GuestId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("guest_id");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hotel_id");
-
-                    b.Property<int>("RoomQuantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("room_quantity");
-
-                    b.Property<Guid>("RoomTypeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("room_type_id");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("status");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("GuestId");
-
-                    b.HasIndex("HotelId");
-
-                    b.HasIndex("RoomTypeId");
-
-                    b.ToTable("reservations", (string)null);
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Room", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.Room", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -172,7 +83,7 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                     b.ToTable("rooms", (string)null);
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.RoomType", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.RoomType", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -187,45 +98,16 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("room_types", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            Description = "Standard Room"
+                        });
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.RoomTypeInventory", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("date");
-
-                    b.Property<Guid>("HotelId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("hotel_id");
-
-                    b.Property<Guid>("RoomTypeId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("room_type_id");
-
-                    b.Property<int>("TotalInventory")
-                        .HasColumnType("integer")
-                        .HasColumnName("total_inventory");
-
-                    b.Property<int>("TotalReserved")
-                        .HasColumnType("integer")
-                        .HasColumnName("total_reserved");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoomTypeId");
-
-                    b.HasIndex("HotelId", "RoomTypeId", "Date")
-                        .IsUnique();
-
-                    b.ToTable("room_type_inventory", (string)null);
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.RoomTypeRate", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.RoomTypeRate", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
@@ -251,36 +133,1721 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("room_type_rates", (string)null);
-                });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Guest", b =>
-                {
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.Email", "Email", b1 =>
+                    b.HasData(
+                        new
                         {
-                            b1.Property<Guid>("GuestId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasMaxLength(255)
-                                .HasColumnType("character varying(255)")
-                                .HasColumnName("email");
-
-                            b1.HasKey("GuestId");
-
-                            b1.ToTable("guests");
-
-                            b1.WithOwner()
-                                .HasForeignKey("GuestId");
+                            Id = new Guid("11111111-1111-1111-1111-000000000001"),
+                            Date = new DateTime(2026, 3, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000002"),
+                            Date = new DateTime(2026, 3, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000003"),
+                            Date = new DateTime(2026, 3, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000004"),
+                            Date = new DateTime(2026, 3, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000005"),
+                            Date = new DateTime(2026, 3, 27, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000006"),
+                            Date = new DateTime(2026, 3, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000007"),
+                            Date = new DateTime(2026, 3, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000008"),
+                            Date = new DateTime(2026, 3, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000009"),
+                            Date = new DateTime(2026, 3, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000010"),
+                            Date = new DateTime(2026, 4, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000011"),
+                            Date = new DateTime(2026, 4, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000012"),
+                            Date = new DateTime(2026, 4, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000013"),
+                            Date = new DateTime(2026, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000014"),
+                            Date = new DateTime(2026, 4, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000015"),
+                            Date = new DateTime(2026, 4, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000016"),
+                            Date = new DateTime(2026, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000017"),
+                            Date = new DateTime(2026, 4, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000018"),
+                            Date = new DateTime(2026, 4, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000019"),
+                            Date = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000020"),
+                            Date = new DateTime(2026, 4, 11, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000021"),
+                            Date = new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000022"),
+                            Date = new DateTime(2026, 4, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000023"),
+                            Date = new DateTime(2026, 4, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000024"),
+                            Date = new DateTime(2026, 4, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000025"),
+                            Date = new DateTime(2026, 4, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000026"),
+                            Date = new DateTime(2026, 4, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000027"),
+                            Date = new DateTime(2026, 4, 18, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000028"),
+                            Date = new DateTime(2026, 4, 19, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000029"),
+                            Date = new DateTime(2026, 4, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000030"),
+                            Date = new DateTime(2026, 4, 21, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000031"),
+                            Date = new DateTime(2026, 4, 22, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000032"),
+                            Date = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000033"),
+                            Date = new DateTime(2026, 4, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000034"),
+                            Date = new DateTime(2026, 4, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000035"),
+                            Date = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000036"),
+                            Date = new DateTime(2026, 4, 27, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000037"),
+                            Date = new DateTime(2026, 4, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000038"),
+                            Date = new DateTime(2026, 4, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000039"),
+                            Date = new DateTime(2026, 4, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000040"),
+                            Date = new DateTime(2026, 5, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000041"),
+                            Date = new DateTime(2026, 5, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000042"),
+                            Date = new DateTime(2026, 5, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000043"),
+                            Date = new DateTime(2026, 5, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000044"),
+                            Date = new DateTime(2026, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000045"),
+                            Date = new DateTime(2026, 5, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000046"),
+                            Date = new DateTime(2026, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000047"),
+                            Date = new DateTime(2026, 5, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000048"),
+                            Date = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000049"),
+                            Date = new DateTime(2026, 5, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000050"),
+                            Date = new DateTime(2026, 5, 11, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000051"),
+                            Date = new DateTime(2026, 5, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000052"),
+                            Date = new DateTime(2026, 5, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000053"),
+                            Date = new DateTime(2026, 5, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000054"),
+                            Date = new DateTime(2026, 5, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000055"),
+                            Date = new DateTime(2026, 5, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000056"),
+                            Date = new DateTime(2026, 5, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000057"),
+                            Date = new DateTime(2026, 5, 18, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000058"),
+                            Date = new DateTime(2026, 5, 19, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000059"),
+                            Date = new DateTime(2026, 5, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-000000000060"),
+                            Date = new DateTime(2026, 5, 21, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
                         });
-
-                    b.Navigation("Email")
-                        .IsRequired();
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Guests.Domain.Entities.Guest", b =>
                 {
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.Address", "Address", b1 =>
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("last_name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("guests", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("11111111-1111-1111-1111-111111111111"),
+                            FirstName = "John",
+                            LastName = "Doe"
+                        });
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Payments.Domain.Entities.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<Guid>("ReservationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reservation_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TransactionId")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("transaction_id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("payments", (string)null);
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Shared.Infrastructure.Models.EventEntry", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<Guid>("AggregateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("aggregate_id");
+
+                    b.Property<int>("AggregateVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("aggregate_version");
+
+                    b.Property<string>("EventData")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("event_data");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("event_type");
+
+                    b.Property<DateTime>("OccurredOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on");
+
+                    b.HasKey("EventId");
+
+                    b.HasIndex("AggregateId", "AggregateVersion")
+                        .IsUnique()
+                        .HasDatabaseName("uix_event_store_aggregate_id_version");
+
+                    b.ToTable("event_store", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000001"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000001"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000001\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-23T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000001\",\"AggregateId\":\"44444444-4444-4444-4444-000000000001\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000002"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000002"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000002\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-24T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000002\",\"AggregateId\":\"44444444-4444-4444-4444-000000000002\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000003"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000003"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000003\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-25T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000003\",\"AggregateId\":\"44444444-4444-4444-4444-000000000003\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000004"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000004"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000004\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-26T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000004\",\"AggregateId\":\"44444444-4444-4444-4444-000000000004\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000005"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000005"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000005\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-27T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000005\",\"AggregateId\":\"44444444-4444-4444-4444-000000000005\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000006"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000006"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000006\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-28T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000006\",\"AggregateId\":\"44444444-4444-4444-4444-000000000006\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000007"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000007"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000007\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-29T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000007\",\"AggregateId\":\"44444444-4444-4444-4444-000000000007\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000008"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000008"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000008\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-30T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000008\",\"AggregateId\":\"44444444-4444-4444-4444-000000000008\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000009"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000009"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000009\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-03-31T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000009\",\"AggregateId\":\"44444444-4444-4444-4444-000000000009\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000010"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000010"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000010\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-01T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000010\",\"AggregateId\":\"44444444-4444-4444-4444-000000000010\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000011"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000011"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000011\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-02T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000011\",\"AggregateId\":\"44444444-4444-4444-4444-000000000011\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000012"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000012"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000012\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-03T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000012\",\"AggregateId\":\"44444444-4444-4444-4444-000000000012\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000013"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000013"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000013\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-04T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000013\",\"AggregateId\":\"44444444-4444-4444-4444-000000000013\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000014"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000014"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000014\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-05T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000014\",\"AggregateId\":\"44444444-4444-4444-4444-000000000014\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000015"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000015"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000015\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-06T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000015\",\"AggregateId\":\"44444444-4444-4444-4444-000000000015\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000016"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000016"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000016\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-07T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000016\",\"AggregateId\":\"44444444-4444-4444-4444-000000000016\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000017"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000017"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000017\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-08T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000017\",\"AggregateId\":\"44444444-4444-4444-4444-000000000017\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000018"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000018"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000018\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-09T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000018\",\"AggregateId\":\"44444444-4444-4444-4444-000000000018\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000019"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000019"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000019\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-10T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000019\",\"AggregateId\":\"44444444-4444-4444-4444-000000000019\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000020"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000020"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000020\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-11T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000020\",\"AggregateId\":\"44444444-4444-4444-4444-000000000020\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000021"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000021"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000021\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-12T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000021\",\"AggregateId\":\"44444444-4444-4444-4444-000000000021\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000022"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000022"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000022\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-13T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000022\",\"AggregateId\":\"44444444-4444-4444-4444-000000000022\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000023"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000023"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000023\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-14T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000023\",\"AggregateId\":\"44444444-4444-4444-4444-000000000023\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000024"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000024"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000024\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-15T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000024\",\"AggregateId\":\"44444444-4444-4444-4444-000000000024\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000025"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000025"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000025\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-16T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000025\",\"AggregateId\":\"44444444-4444-4444-4444-000000000025\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000026"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000026"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000026\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-17T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000026\",\"AggregateId\":\"44444444-4444-4444-4444-000000000026\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000027"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000027"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000027\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-18T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000027\",\"AggregateId\":\"44444444-4444-4444-4444-000000000027\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000028"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000028"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000028\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-19T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000028\",\"AggregateId\":\"44444444-4444-4444-4444-000000000028\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000029"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000029"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000029\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-20T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000029\",\"AggregateId\":\"44444444-4444-4444-4444-000000000029\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000030"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000030"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000030\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-21T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000030\",\"AggregateId\":\"44444444-4444-4444-4444-000000000030\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000031"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000031"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000031\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-22T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000031\",\"AggregateId\":\"44444444-4444-4444-4444-000000000031\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000032"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000032"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000032\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-23T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000032\",\"AggregateId\":\"44444444-4444-4444-4444-000000000032\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000033"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000033"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000033\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-24T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000033\",\"AggregateId\":\"44444444-4444-4444-4444-000000000033\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000034"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000034"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000034\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-25T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000034\",\"AggregateId\":\"44444444-4444-4444-4444-000000000034\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000035"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000035"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000035\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-26T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000035\",\"AggregateId\":\"44444444-4444-4444-4444-000000000035\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000036"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000036"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000036\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-27T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000036\",\"AggregateId\":\"44444444-4444-4444-4444-000000000036\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000037"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000037"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000037\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-28T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000037\",\"AggregateId\":\"44444444-4444-4444-4444-000000000037\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000038"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000038"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000038\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-29T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000038\",\"AggregateId\":\"44444444-4444-4444-4444-000000000038\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000039"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000039"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000039\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-04-30T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000039\",\"AggregateId\":\"44444444-4444-4444-4444-000000000039\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000040"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000040"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000040\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-01T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000040\",\"AggregateId\":\"44444444-4444-4444-4444-000000000040\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000041"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000041"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000041\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-02T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000041\",\"AggregateId\":\"44444444-4444-4444-4444-000000000041\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000042"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000042"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000042\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-03T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000042\",\"AggregateId\":\"44444444-4444-4444-4444-000000000042\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000043"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000043"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000043\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-04T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000043\",\"AggregateId\":\"44444444-4444-4444-4444-000000000043\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000044"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000044"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000044\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-05T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000044\",\"AggregateId\":\"44444444-4444-4444-4444-000000000044\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000045"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000045"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000045\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-06T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000045\",\"AggregateId\":\"44444444-4444-4444-4444-000000000045\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000046"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000046"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000046\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-07T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000046\",\"AggregateId\":\"44444444-4444-4444-4444-000000000046\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000047"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000047"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000047\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-08T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000047\",\"AggregateId\":\"44444444-4444-4444-4444-000000000047\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000048"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000048"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000048\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-09T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000048\",\"AggregateId\":\"44444444-4444-4444-4444-000000000048\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000049"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000049"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000049\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-10T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000049\",\"AggregateId\":\"44444444-4444-4444-4444-000000000049\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000050"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000050"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000050\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-11T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000050\",\"AggregateId\":\"44444444-4444-4444-4444-000000000050\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000051"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000051"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000051\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-12T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000051\",\"AggregateId\":\"44444444-4444-4444-4444-000000000051\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000052"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000052"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000052\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-13T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000052\",\"AggregateId\":\"44444444-4444-4444-4444-000000000052\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000053"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000053"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000053\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-14T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000053\",\"AggregateId\":\"44444444-4444-4444-4444-000000000053\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000054"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000054"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000054\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-15T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000054\",\"AggregateId\":\"44444444-4444-4444-4444-000000000054\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000055"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000055"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000055\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-16T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000055\",\"AggregateId\":\"44444444-4444-4444-4444-000000000055\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000056"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000056"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000056\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-17T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000056\",\"AggregateId\":\"44444444-4444-4444-4444-000000000056\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000057"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000057"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000057\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-18T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000057\",\"AggregateId\":\"44444444-4444-4444-4444-000000000057\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000058"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000058"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000058\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-19T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000058\",\"AggregateId\":\"44444444-4444-4444-4444-000000000058\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000059"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000059"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000059\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-20T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000059\",\"AggregateId\":\"44444444-4444-4444-4444-000000000059\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            EventId = new Guid("55555555-5555-5555-5555-000000000060"),
+                            AggregateId = new Guid("44444444-4444-4444-4444-000000000060"),
+                            AggregateVersion = 0,
+                            EventData = "{\"InventoryId\":\"44444444-4444-4444-4444-000000000060\",\"HotelId\":\"11111111-1111-1111-1111-111111111111\",\"RoomTypeId\":\"11111111-1111-1111-1111-111111111111\",\"Date\":\"2026-05-21T00:00:00\",\"TotalInventory\":10,\"EventId\":\"55555555-5555-5555-5555-000000000060\",\"AggregateId\":\"44444444-4444-4444-4444-000000000060\",\"AggregateVersion\":0,\"OccuredOn\":\"2026-03-22T00:00:00Z\"}",
+                            EventType = "RoomTypeInventoryCreatedEvent",
+                            OccurredOn = new DateTime(2026, 3, 22, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Shared.Infrastructure.Models.RoomTypeInventoryProjection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date");
+
+                    b.Property<Guid>("HotelId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("hotel_id");
+
+                    b.Property<Guid>("RoomTypeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("room_type_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomTypeId");
+
+                    b.HasIndex("HotelId", "RoomTypeId", "Date")
+                        .IsUnique();
+
+                    b.ToTable("room_type_inventory_projections", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000001"),
+                            Date = new DateTime(2026, 3, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000002"),
+                            Date = new DateTime(2026, 3, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000003"),
+                            Date = new DateTime(2026, 3, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000004"),
+                            Date = new DateTime(2026, 3, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000005"),
+                            Date = new DateTime(2026, 3, 27, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000006"),
+                            Date = new DateTime(2026, 3, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000007"),
+                            Date = new DateTime(2026, 3, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000008"),
+                            Date = new DateTime(2026, 3, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000009"),
+                            Date = new DateTime(2026, 3, 31, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000010"),
+                            Date = new DateTime(2026, 4, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000011"),
+                            Date = new DateTime(2026, 4, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000012"),
+                            Date = new DateTime(2026, 4, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000013"),
+                            Date = new DateTime(2026, 4, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000014"),
+                            Date = new DateTime(2026, 4, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000015"),
+                            Date = new DateTime(2026, 4, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000016"),
+                            Date = new DateTime(2026, 4, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000017"),
+                            Date = new DateTime(2026, 4, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000018"),
+                            Date = new DateTime(2026, 4, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000019"),
+                            Date = new DateTime(2026, 4, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000020"),
+                            Date = new DateTime(2026, 4, 11, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000021"),
+                            Date = new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000022"),
+                            Date = new DateTime(2026, 4, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000023"),
+                            Date = new DateTime(2026, 4, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000024"),
+                            Date = new DateTime(2026, 4, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000025"),
+                            Date = new DateTime(2026, 4, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000026"),
+                            Date = new DateTime(2026, 4, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000027"),
+                            Date = new DateTime(2026, 4, 18, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000028"),
+                            Date = new DateTime(2026, 4, 19, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000029"),
+                            Date = new DateTime(2026, 4, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000030"),
+                            Date = new DateTime(2026, 4, 21, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000031"),
+                            Date = new DateTime(2026, 4, 22, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000032"),
+                            Date = new DateTime(2026, 4, 23, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000033"),
+                            Date = new DateTime(2026, 4, 24, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000034"),
+                            Date = new DateTime(2026, 4, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000035"),
+                            Date = new DateTime(2026, 4, 26, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000036"),
+                            Date = new DateTime(2026, 4, 27, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000037"),
+                            Date = new DateTime(2026, 4, 28, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000038"),
+                            Date = new DateTime(2026, 4, 29, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000039"),
+                            Date = new DateTime(2026, 4, 30, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000040"),
+                            Date = new DateTime(2026, 5, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000041"),
+                            Date = new DateTime(2026, 5, 2, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000042"),
+                            Date = new DateTime(2026, 5, 3, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000043"),
+                            Date = new DateTime(2026, 5, 4, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000044"),
+                            Date = new DateTime(2026, 5, 5, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000045"),
+                            Date = new DateTime(2026, 5, 6, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000046"),
+                            Date = new DateTime(2026, 5, 7, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000047"),
+                            Date = new DateTime(2026, 5, 8, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000048"),
+                            Date = new DateTime(2026, 5, 9, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000049"),
+                            Date = new DateTime(2026, 5, 10, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000050"),
+                            Date = new DateTime(2026, 5, 11, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000051"),
+                            Date = new DateTime(2026, 5, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000052"),
+                            Date = new DateTime(2026, 5, 13, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000053"),
+                            Date = new DateTime(2026, 5, 14, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000054"),
+                            Date = new DateTime(2026, 5, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000055"),
+                            Date = new DateTime(2026, 5, 16, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000056"),
+                            Date = new DateTime(2026, 5, 17, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000057"),
+                            Date = new DateTime(2026, 5, 18, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000058"),
+                            Date = new DateTime(2026, 5, 19, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000059"),
+                            Date = new DateTime(2026, 5, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        },
+                        new
+                        {
+                            Id = new Guid("44444444-4444-4444-4444-000000000060"),
+                            Date = new DateTime(2026, 5, 21, 0, 0, 0, 0, DateTimeKind.Utc),
+                            HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            RoomTypeId = new Guid("11111111-1111-1111-1111-111111111111")
+                        });
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Shared.Infrastructure.Models.SnapshotEntry", b =>
+                {
+                    b.Property<Guid>("AggregateId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("aggregate_id");
+
+                    b.Property<int>("AggregateVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("aggregate_version");
+
+                    b.Property<string>("AggregateType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("aggregate_type");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_on");
+
+                    b.Property<string>("SnapshotData")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("snapshot_data");
+
+                    b.HasKey("AggregateId", "AggregateVersion");
+
+                    b.ToTable("snapshots", (string)null);
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.InboxState", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("Consumed")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("ConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ReceiveCount")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime>("Received")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Delivered");
+
+                    b.ToTable("InboxState");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
+                {
+                    b.Property<long>("SequenceNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("SequenceNumber"));
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<Guid?>("ConversationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DestinationAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime?>("EnqueueTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ExpirationTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FaultAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Headers")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("InboxConsumerId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InboxMessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("InitiatorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MessageType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("OutboxId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Properties")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RequestId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ResponseAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<DateTime>("SentTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SourceAddress")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("SequenceNumber");
+
+                    b.HasIndex("EnqueueTime");
+
+                    b.HasIndex("ExpirationTime");
+
+                    b.HasIndex("OutboxId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.HasIndex("InboxMessageId", "InboxConsumerId", "SequenceNumber")
+                        .IsUnique();
+
+                    b.ToTable("OutboxMessage");
+                });
+
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxState", b =>
+                {
+                    b.Property<Guid>("OutboxId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("Delivered")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("LastSequenceNumber")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid>("LockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
+                    b.HasKey("OutboxId");
+
+                    b.HasIndex("Created");
+
+                    b.ToTable("OutboxState");
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.Hotel", b =>
+                {
+                    b.OwnsOne("FC4.HotelReservation.Catalog.Domain.ValueObjects.Address", "Address", b1 =>
                         {
                             b1.Property<Guid>("HotelId")
                                 .HasColumnType("uuid");
@@ -321,22 +1888,481 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
 
                             b1.WithOwner()
                                 .HasForeignKey("HotelId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    HotelId = new Guid("11111111-1111-1111-1111-111111111111"),
+                                    City = "New York",
+                                    Country = "USA",
+                                    State = "NY",
+                                    Street = "123 Main Street",
+                                    ZipCode = "10001"
+                                });
                         });
 
                     b.Navigation("Address")
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Payment", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.Room", b =>
                 {
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Reservation", null)
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.Hotel", null)
                         .WithMany()
-                        .HasForeignKey("ReservationId")
+                        .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_payments_reservations");
+                        .HasConstraintName("fk_rooms_hotels");
 
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.Money", "Amount", b1 =>
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.RoomType", null)
+                        .WithMany()
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_rooms_room_types");
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Catalog.Domain.Entities.RoomTypeRate", b =>
+                {
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.Hotel", null)
+                        .WithMany()
+                        .HasForeignKey("HotelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_room_type_rates_hotels");
+
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.RoomType", null)
+                        .WithMany()
+                        .HasForeignKey("RoomTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_room_type_rates_room_types");
+
+                    b.OwnsOne("FC4.HotelReservation.Catalog.Domain.ValueObjects.Money", "Rate", b1 =>
+                        {
+                            b1.Property<Guid>("RoomTypeRateId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Currency")
+                                .IsRequired()
+                                .HasMaxLength(3)
+                                .HasColumnType("character varying(3)")
+                                .HasColumnName("rate_currency");
+
+                            b1.Property<decimal>("Value")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)")
+                                .HasColumnName("rate_amount");
+
+                            b1.HasKey("RoomTypeRateId");
+
+                            b1.ToTable("room_type_rates");
+
+                            b1.WithOwner()
+                                .HasForeignKey("RoomTypeRateId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000001"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000002"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000003"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000004"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000005"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000006"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000007"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000008"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000009"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000010"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000011"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000012"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000013"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000014"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000015"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000016"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000017"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000018"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000019"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000020"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000021"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000022"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000023"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000024"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000025"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000026"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000027"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000028"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000029"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000030"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000031"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000032"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000033"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000034"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000035"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000036"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000037"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000038"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000039"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000040"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000041"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000042"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000043"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000044"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000045"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000046"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000047"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000048"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000049"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000050"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000051"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000052"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000053"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000054"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000055"),
+                                    Currency = "USD",
+                                    Value = 195.000m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000056"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000057"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000058"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000059"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                },
+                                new
+                                {
+                                    RoomTypeRateId = new Guid("11111111-1111-1111-1111-000000000060"),
+                                    Currency = "USD",
+                                    Value = 150.00m
+                                });
+                        });
+
+                    b.Navigation("Rate")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Guests.Domain.Entities.Guest", b =>
+                {
+                    b.OwnsOne("FC4.HotelReservation.Guests.Domain.ValueObjects.Email", "Email", b1 =>
+                        {
+                            b1.Property<Guid>("GuestId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Value")
+                                .IsRequired()
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
+                                .HasColumnName("email");
+
+                            b1.HasKey("GuestId");
+
+                            b1.ToTable("guests");
+
+                            b1.WithOwner()
+                                .HasForeignKey("GuestId");
+
+                            b1.HasData(
+                                new
+                                {
+                                    GuestId = new Guid("11111111-1111-1111-1111-111111111111"),
+                                    Value = "john.doe@example.com"
+                                });
+                        });
+
+                    b.Navigation("Email")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("FC4.HotelReservation.Payments.Domain.Entities.Payment", b =>
+                {
+                    b.OwnsOne("FC4.HotelReservation.Payments.Domain.ValueObjects.Money", "Amount", b1 =>
                         {
                             b1.Property<Guid>("PaymentId")
                                 .HasColumnType("uuid");
@@ -364,108 +2390,16 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Reservation", b =>
+            modelBuilder.Entity("FC4.HotelReservation.Shared.Infrastructure.Models.RoomTypeInventoryProjection", b =>
                 {
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Guest", null)
-                        .WithMany()
-                        .HasForeignKey("GuestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_reservations_guests");
-
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_reservations_hotels");
-
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.RoomType", null)
-                        .WithMany()
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_reservations_room_types");
-
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.Money", "TotalAmount", b1 =>
-                        {
-                            b1.Property<Guid>("ReservationId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("character varying(3)")
-                                .HasColumnName("total_currency");
-
-                            b1.Property<decimal>("Value")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)")
-                                .HasColumnName("total_amount");
-
-                            b1.HasKey("ReservationId");
-
-                            b1.ToTable("reservations");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ReservationId");
-                        });
-
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.DateRange", "StayPeriod", b1 =>
-                        {
-                            b1.Property<Guid>("ReservationId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTime>("EndDate")
-                                .HasColumnType("timestamp with time zone")
-                                .HasColumnName("stay_end_date");
-
-                            b1.Property<DateTime>("StartDate")
-                                .HasColumnType("timestamp with time zone")
-                                .HasColumnName("stay_start_date");
-
-                            b1.HasKey("ReservationId");
-
-                            b1.ToTable("reservations");
-
-                            b1.WithOwner()
-                                .HasForeignKey("ReservationId");
-                        });
-
-                    b.Navigation("StayPeriod")
-                        .IsRequired();
-
-                    b.Navigation("TotalAmount")
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.Room", b =>
-                {
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", null)
-                        .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_rooms_hotels");
-
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.RoomType", null)
-                        .WithMany()
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_rooms_room_types");
-                });
-
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.RoomTypeInventory", b =>
-                {
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", null)
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.Hotel", null)
                         .WithMany()
                         .HasForeignKey("HotelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_room_type_inventories_hotels");
 
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.RoomType", null)
+                    b.HasOne("FC4.HotelReservation.Catalog.Domain.Entities.RoomType", null)
                         .WithMany()
                         .HasForeignKey("RoomTypeId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -473,48 +2407,16 @@ namespace FC4.HotelReservation.Shared.Infrastructure.Migrations
                         .HasConstraintName("fk_room_type_inventories_room_types");
                 });
 
-            modelBuilder.Entity("FC4.HotelReservation.Reservations.Domain.Entities.RoomTypeRate", b =>
+            modelBuilder.Entity("MassTransit.EntityFrameworkCoreIntegration.OutboxMessage", b =>
                 {
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.Hotel", null)
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.OutboxState", null)
                         .WithMany()
-                        .HasForeignKey("HotelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_room_type_rates_hotels");
+                        .HasForeignKey("OutboxId");
 
-                    b.HasOne("FC4.HotelReservation.Reservations.Domain.Entities.RoomType", null)
+                    b.HasOne("MassTransit.EntityFrameworkCoreIntegration.InboxState", null)
                         .WithMany()
-                        .HasForeignKey("RoomTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_room_type_rates_room_types");
-
-                    b.OwnsOne("FC4.HotelReservation.Reservations.Domain.ValueObjects.Money", "Rate", b1 =>
-                        {
-                            b1.Property<Guid>("RoomTypeRateId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("character varying(3)")
-                                .HasColumnName("rate_currency");
-
-                            b1.Property<decimal>("Value")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("numeric(18,2)")
-                                .HasColumnName("rate_amount");
-
-                            b1.HasKey("RoomTypeRateId");
-
-                            b1.ToTable("room_type_rates");
-
-                            b1.WithOwner()
-                                .HasForeignKey("RoomTypeRateId");
-                        });
-
-                    b.Navigation("Rate")
-                        .IsRequired();
+                        .HasForeignKey("InboxMessageId", "InboxConsumerId")
+                        .HasPrincipalKey("MessageId", "ConsumerId");
                 });
 #pragma warning restore 612, 618
         }

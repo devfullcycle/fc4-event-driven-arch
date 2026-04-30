@@ -27,6 +27,11 @@ public class GlobalExceptionHandler: IExceptionHandler
                 problemDetails.Detail = exception.Message;
                 problemDetails.Status = StatusCodes.Status404NotFound;
                 break;
+            case ConflictException:
+                problemDetails.Title = "Resource Not Found";
+                problemDetails.Detail = exception.Message;
+                problemDetails.Status = StatusCodes.Status409Conflict;
+                break;
             default:
                 problemDetails.Title = "Unexpected Error";
                 problemDetails.Detail = "An unexpected error occurred.";

@@ -12,6 +12,12 @@ public class ReservationCreatedEventHandler(IPublishEndpoint publishEndpoint)
     {
         var integrationEvent = new ReservationCreated(
             notification.ReservationId,
+            notification.HotelId,
+            notification.RoomTypeId,
+            notification.StayPeriod.StartDate,
+            notification.StayPeriod.EndDate,
+            notification.GuestId,
+            notification.RoomQuantity,
             notification.Amount.Value,
             notification.Amount.Currency);
         await publishEndpoint.Publish(integrationEvent, cancellationToken);
