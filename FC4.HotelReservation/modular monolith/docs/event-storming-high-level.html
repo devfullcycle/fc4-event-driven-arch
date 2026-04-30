@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Storming — Hotel Reservation (Alto Nível)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #f5f5f0; font-family: 'Segoe UI', system-ui, sans-serif; overflow: auto; }
+
+  .board {
+    width: 5800px;
+    min-height: 100vh;
+    padding: 40px 60px 80px;
+    position: relative;
+    background:
+      linear-gradient(90deg, rgba(0,0,0,.03) 1px, transparent 1px),
+      linear-gradient(rgba(0,0,0,.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .title { font-size: 32px; font-weight: 800; color: #1a1a2e; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: #666; margin-bottom: 40px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 36px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+  .legend-color { width: 22px; height: 22px; border-radius: 3px; box-shadow: 1px 1px 3px rgba(0,0,0,.15); }
+
+  svg.connections {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .node {
+    position: absolute;
+    width: 160px;
+    min-height: 90px;
+    padding: 14px 12px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    box-shadow: 2px 3px 10px rgba(0,0,0,.13);
+    z-index: 1;
+    transition: transform .15s;
+  }
+  .node:hover { transform: scale(1.08); z-index: 20; }
+  .node .label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; opacity: .5; margin-bottom: 6px;
+  }
+  .node .name { font-weight: 700; font-size: 13.5px; word-break: break-word; }
+  .node .desc { margin-top: 6px; font-size: 11px; opacity: .72; }
+
+  .event     { background: #FF8A24; color: #fff; }
+  .command   { background: #5C9DFF; color: #fff; }
+  .actor     { background: #FFE066; color: #1a1a2e; }
+  .aggregate { background: #FFD54F; color: #1a1a2e; border: 3px solid #FFC107; }
+  .policy    { background: #CE93D8; color: #1a1a2e; }
+  .external  { background: #F48FB1; color: #1a1a2e; }
+  .readmodel { background: #81D4FA; color: #1a1a2e; }
+
+  .decision {
+    background: #1a1a2e; color: #fff; border-radius: 50%;
+    width: 56px; min-height: 56px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; font-size: 18px; font-weight: 700; padding: 8px;
+  }
+
+  .phase-label {
+    position: absolute;
+    font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; padding: 5px 14px; border-radius: 20px;
+    z-index: 3; white-space: nowrap;
+  }
+  .phase-happy   { background: #4CAF50; color: #fff; }
+  .phase-cancel  { background: #F44336; color: #fff; }
+  .phase-reject  { background: #FF9800; color: #fff; }
+  .phase-refund  { background: #9C27B0; color: #fff; }
+  .phase-cqrs    { background: #2196F3; color: #fff; }
+
+  .zone {
+    position: absolute; border-radius: 16px; z-index: 0; opacity: .45;
+  }
+
+  .branch-label {
+    position: absolute; font-size: 10px; font-weight: 700; z-index: 3;
+    background: #fff; padding: 3px 10px; border-radius: 8px; border: 1px solid #ddd;
+  }
+
+  .lifecycle {
+    background: #fff; border: 2px solid #e0e0e0; border-radius: 12px;
+    padding: 20px 28px; display: inline-block;
+  }
+  .lifecycle h3 { font-size: 15px; margin-bottom: 12px; color: #1a1a2e; }
+  .lifecycle code { font-size: 13px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="board" id="board">
+
+  <div class="title">🟧 Event Storming — Reservas de Hotel</div>
+  <div class="subtitle">Visão de alto nível · Fluxo conectado completo</div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#FFE066"></div>Ator</div>
+    <div class="legend-item"><div class="legend-color" style="background:#5C9DFF"></div>Comando</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FF8A24"></div>Evento</div>
+    <div class="legend-item"><div class="legend-color" style="background:#FFD54F;border:3px solid #FFC107"></div>Agregado</div>
+    <div class="legend-item"><div class="legend-color" style="background:#CE93D8"></div>Política / Reação</div>
+    <div class="legend-item"><div class="legend-color" style="background:#F48FB1"></div>Sistema Externo</div>
+    <div class="legend-item"><div class="legend-color" style="background:#81D4FA"></div>Consulta</div>
+    <div class="legend-item"><div class="legend-color" style="background:#1a1a2e; border-radius:50%"></div>Ponto de Decisão</div>
+  </div>
+
+  <!-- ====== ZONES ====== -->
+  <div class="zone" style="left:40px; top:200px; width:1660px; height:290px; background:rgba(76,175,80,.06); border:2px solid rgba(76,175,80,.15);"></div>
+  <div class="zone" style="left:1720px; top:200px; width:1320px; height:290px; background:rgba(76,175,80,.06); border:2px solid rgba(76,175,80,.15);"></div>
+  <div class="zone" style="left:3060px; top:200px; width:960px; height:290px; background:rgba(233,30,99,.06); border:2px solid rgba(233,30,99,.15);"></div>
+  <div class="zone" style="left:4180px; top:200px; width:900px; height:290px; background:rgba(76,175,80,.06); border:2px solid rgba(76,175,80,.15);"></div>
+  <div class="zone" style="left:40px; top:580px; width:2200px; height:270px; background:rgba(244,67,54,.05); border:2px solid rgba(244,67,54,.12);"></div>
+  <div class="zone" style="left:4040px; top:580px; width:1600px; height:270px; background:rgba(255,152,0,.05); border:2px solid rgba(255,152,0,.12);"></div>
+  <div class="zone" style="left:4040px; top:920px; width:1600px; height:270px; background:rgba(156,39,176,.05); border:2px solid rgba(156,39,176,.12);"></div>
+  <div class="zone" style="left:40px; top:1280px; width:2600px; height:260px; background:rgba(33,150,243,.05); border:2px solid rgba(33,150,243,.12);"></div>
+
+  <!-- ====== PHASE LABELS ====== -->
+  <div class="phase-label phase-happy"   style="left:60px; top:190px;">✅ Criação da Reserva</div>
+  <div class="phase-label phase-happy"   style="left:1740px; top:190px;">📦 Inventário + Pagamento</div>
+  <div class="phase-label" style="left:3080px; top:190px; background:#E91E63; color:#fff;">💳 Processamento do Pagamento</div>
+  <div class="phase-label phase-happy"   style="left:4200px; top:190px;">✅ Confirmação</div>
+  <div class="phase-label phase-cancel"  style="left:60px; top:570px;">❌ Cancelamento pelo Hóspede</div>
+  <div class="phase-label phase-reject"  style="left:4060px; top:570px;">⚠️ Pagamento Falhou</div>
+  <div class="phase-label phase-refund"  style="left:4060px; top:910px;">💸 Reembolso</div>
+  <div class="phase-label phase-cqrs"    style="left:60px; top:1270px;">📖 Consultas</div>
+
+  <!-- ============================================================ -->
+  <!--  ROW 1 — HAPPY PATH                                         -->
+  <!-- ============================================================ -->
+
+  <div class="node actor" id="n01" style="left:80px; top:240px;">
+    <div class="label">👤 Ator</div>
+    <div class="name">Hóspede</div>
+    <div class="desc">Quer fazer uma reserva</div>
+  </div>
+
+  <div class="node command" id="n02" style="left:300px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Criar Reserva</div>
+    <div class="desc">Escolhe hotel, tipo de quarto, datas</div>
+  </div>
+
+  <div class="node aggregate" id="n03" style="left:520px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reserva</div>
+    <div class="desc">Valida disponibilidade e calcula valor</div>
+  </div>
+
+  <div class="node event" id="n04" style="left:740px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reserva Criada</div>
+    <div class="desc">Status: Pendente</div>
+  </div>
+
+  <div class="node policy" id="n05" style="left:960px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Dar Baixa na Disponibilidade</div>
+    <div class="desc">Quando uma reserva é criada, bloquear quartos</div>
+  </div>
+
+  <div class="node aggregate" id="n06" style="left:1180px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Disponibilidade de Quartos</div>
+    <div class="desc">Reserva os quartos para o período</div>
+  </div>
+
+  <div class="node event" id="n07" style="left:1400px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Quartos Reservados</div>
+    <div class="desc">Quartos bloqueados</div>
+  </div>
+
+  <div class="node policy" id="n08" style="left:1760px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Solicitar Pagamento</div>
+    <div class="desc">Quando quartos são reservados, criar cobrança</div>
+  </div>
+
+  <div class="node external" id="n09" style="left:1980px; top:240px;">
+    <div class="label">🟣 Sistema Externo</div>
+    <div class="name">Módulo de Pagamentos</div>
+    <div class="desc">Recebe a solicitação de cobrança</div>
+  </div>
+
+  <div class="node command" id="n10" style="left:2200px; top:240px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Criar Pagamento Pendente</div>
+    <div class="desc">Registra cobrança no valor da reserva</div>
+  </div>
+
+  <div class="node aggregate" id="n11" style="left:2420px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Pagamento</div>
+    <div class="desc">Status: Pendente</div>
+  </div>
+
+  <div class="node event" id="n12" style="left:2640px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Pagamento Criado</div>
+    <div class="desc">Aguardando processamento</div>
+  </div>
+
+  <div class="node external" id="n13" style="left:3100px; top:240px;">
+    <div class="label">🟣 Sistema Externo</div>
+    <div class="name">Gateway de Pagamento</div>
+    <div class="desc">Processa a cobrança</div>
+  </div>
+
+  <div class="node event" id="n14" style="left:3320px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Pagamento Processado</div>
+    <div class="desc">O resultado pode variar...</div>
+  </div>
+
+  <div class="node decision" id="n15" style="left:3560px; top:275px;">?</div>
+
+  <div class="node policy" id="n16" style="left:4220px; top:240px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Confirmar Reserva</div>
+    <div class="desc">Quando pagamento aprovado, marcar como paga</div>
+  </div>
+
+  <div class="node aggregate" id="n17" style="left:4440px; top:240px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reserva</div>
+    <div class="desc">Status: Paga ✓</div>
+  </div>
+
+  <div class="node event" id="n18" style="left:4660px; top:240px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reserva Confirmada</div>
+    <div class="desc">Hóspede notificado</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!--  ROW 2 — CANCELLATION                                       -->
+  <!-- ============================================================ -->
+
+  <div class="node actor" id="n19" style="left:80px; top:620px;">
+    <div class="label">👤 Ator</div>
+    <div class="name">Hóspede</div>
+    <div class="desc">Quer cancelar a reserva</div>
+  </div>
+
+  <div class="node command" id="n20" style="left:300px; top:620px;">
+    <div class="label">📘 Comando</div>
+    <div class="name">Cancelar Reserva</div>
+    <div class="desc">Solicita o cancelamento</div>
+  </div>
+
+  <div class="node aggregate" id="n21" style="left:520px; top:620px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reserva</div>
+    <div class="desc">Verifica se pode cancelar</div>
+  </div>
+
+  <div class="node event" id="n22" style="left:740px; top:620px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reserva Cancelada</div>
+    <div class="desc">Status: Cancelada</div>
+  </div>
+
+  <div class="node policy" id="n23" style="left:960px; top:620px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">Quando reserva cancelada, devolver disponibilidade</div>
+  </div>
+
+  <div class="node aggregate" id="n24" style="left:1180px; top:620px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Disponibilidade de Quartos</div>
+    <div class="desc">Quartos liberados</div>
+  </div>
+
+  <div class="node event" id="n25" style="left:1400px; top:620px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Quartos Liberados</div>
+    <div class="desc">Disponibilidade restaurada</div>
+  </div>
+
+  <div class="node policy" id="n26" style="left:1620px; top:620px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Notificar Cancelamento</div>
+    <div class="desc">Atualizar consultas e avisar interessados</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!--  ROW 3 — REJECTION                                          -->
+  <!-- ============================================================ -->
+
+  <div class="node policy" id="n27" style="left:4080px; top:620px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Rejeitar Reserva</div>
+    <div class="desc">Quando pagamento falha, rejeitar reserva</div>
+  </div>
+
+  <div class="node aggregate" id="n28" style="left:4300px; top:620px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reserva</div>
+    <div class="desc">Status: Rejeitada</div>
+  </div>
+
+  <div class="node event" id="n29" style="left:4520px; top:620px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reserva Rejeitada</div>
+    <div class="desc">Pagamento não aprovado</div>
+  </div>
+
+  <div class="node policy" id="n30" style="left:4740px; top:620px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">Devolver disponibilidade</div>
+  </div>
+
+  <div class="node event" id="n31" style="left:4960px; top:620px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Quartos Liberados</div>
+    <div class="desc">Disponibilidade restaurada</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!--  ROW 4 — REFUND                                             -->
+  <!-- ============================================================ -->
+
+  <div class="node policy" id="n32" style="left:4080px; top:960px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Cancelar por Reembolso</div>
+    <div class="desc">Quando pagamento reembolsado, cancelar reserva</div>
+  </div>
+
+  <div class="node aggregate" id="n33" style="left:4300px; top:960px;">
+    <div class="label">🟡 Agregado</div>
+    <div class="name">Reserva</div>
+    <div class="desc">Status: Cancelada</div>
+  </div>
+
+  <div class="node event" id="n34" style="left:4520px; top:960px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Reserva Cancelada</div>
+    <div class="desc">Reembolso processado</div>
+  </div>
+
+  <div class="node policy" id="n35" style="left:4740px; top:960px;">
+    <div class="label">⚙️ Política</div>
+    <div class="name">Liberar Quartos</div>
+    <div class="desc">Devolver disponibilidade</div>
+  </div>
+
+  <div class="node event" id="n36" style="left:4960px; top:960px;">
+    <div class="label">🟧 Evento</div>
+    <div class="name">Quartos Liberados</div>
+    <div class="desc">Disponibilidade restaurada</div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!--  ROW 5 — READ MODELS                                        -->
+  <!-- ============================================================ -->
+
+  <div class="node policy" id="n37" style="left:80px; top:1330px;">
+    <div class="label">⚙️ Reação</div>
+    <div class="name">Projetar Reserva</div>
+    <div class="desc">Quando reserva criada, montar visão de consulta</div>
+  </div>
+
+  <div class="node readmodel" id="n38" style="left:300px; top:1330px;">
+    <div class="label">📗 Consulta</div>
+    <div class="name">Reservas do Hóspede</div>
+    <div class="desc">Lista de reservas com detalhes</div>
+  </div>
+
+  <div class="node policy" id="n39" style="left:700px; top:1330px;">
+    <div class="label">⚙️ Reação</div>
+    <div class="name">Atualizar Status</div>
+    <div class="desc">Quando status muda, atualizar consulta</div>
+  </div>
+
+  <div class="node readmodel" id="n40" style="left:920px; top:1330px;">
+    <div class="label">📗 Consulta</div>
+    <div class="name">Reservas do Hóspede</div>
+    <div class="desc">Status atualizado</div>
+  </div>
+
+  <div class="node policy" id="n41" style="left:1320px; top:1330px;">
+    <div class="label">⚙️ Reação</div>
+    <div class="name">Atualizar Disponibilidade</div>
+    <div class="desc">Quando inventário muda, atualizar consulta</div>
+  </div>
+
+  <div class="node readmodel" id="n42" style="left:1540px; top:1330px;">
+    <div class="label">📗 Consulta</div>
+    <div class="name">Disponibilidade de Quartos</div>
+    <div class="desc">Painel de ocupação</div>
+  </div>
+
+  <!-- ====== BRANCH LABELS ====== -->
+  <div class="branch-label" style="left:3520px; top:360px; color:#1a1a2e;">
+    O que aconteceu<br>com o pagamento?
+  </div>
+
+  <div class="branch-label" style="left:3680px; top:250px; color:#4CAF50;">✅ Aprovado</div>
+  <div class="branch-label" style="left:3680px; top:610px; color:#FF9800;">⚠️ Falhou</div>
+  <div class="branch-label" style="left:3680px; top:950px; color:#9C27B0;">💸 Reembolsado</div>
+
+  <!-- ========== SVG CONNECTIONS ========== -->
+  <svg class="connections" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="aG" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#4CAF50"/>
+      </marker>
+      <marker id="aR" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#F44336"/>
+      </marker>
+      <marker id="aO" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#FF9800"/>
+      </marker>
+      <marker id="aP" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#9C27B0"/>
+      </marker>
+      <marker id="aB" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#2196F3"/>
+      </marker>
+      <marker id="aX" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#888"/>
+      </marker>
+    </defs>
+
+    <!-- ======== ROW 1: Happy Path ======== -->
+    <line x1="240" y1="290" x2="300" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="460" y1="290" x2="520" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="680" y1="290" x2="740" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="900" y1="290" x2="960" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="1120" y1="290" x2="1180" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="1340" y1="290" x2="1400" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <!-- n07 → n08 (crosses zone) -->
+    <line x1="1560" y1="290" x2="1760" y2="290" stroke="#4CAF50" stroke-width="2.5" marker-end="url(#aG)"/>
+    <line x1="1920" y1="290" x2="1980" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="2140" y1="290" x2="2200" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="2360" y1="290" x2="2420" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="2580" y1="290" x2="2640" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <!-- n12 → n13 (crosses to payment zone) -->
+    <line x1="2800" y1="290" x2="3100" y2="290" stroke="#E91E63" stroke-width="2.5" stroke-dasharray="8,4" marker-end="url(#aX)"/>
+    <line x1="3260" y1="290" x2="3320" y2="290" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+    <line x1="3480" y1="300" x2="3560" y2="300" stroke="#888" stroke-width="2" marker-end="url(#aX)"/>
+
+    <!-- ======== DECISION BRANCHES ======== -->
+    <line x1="3616" y1="300" x2="4220" y2="290" stroke="#4CAF50" stroke-width="2.5" marker-end="url(#aG)"/>
+    <path d="M 3588,331 L 3588,670 L 4080,670" fill="none" stroke="#FF9800" stroke-width="2.5" marker-end="url(#aO)"/>
+    <path d="M 3588,331 L 3588,1010 L 4080,1010" fill="none" stroke="#9C27B0" stroke-width="2.5" marker-end="url(#aP)"/>
+
+    <!-- ======== ROW 1 cont: Confirmation ======== -->
+    <line x1="4380" y1="290" x2="4440" y2="290" stroke="#4CAF50" stroke-width="2" marker-end="url(#aG)"/>
+    <line x1="4600" y1="290" x2="4660" y2="290" stroke="#4CAF50" stroke-width="2" marker-end="url(#aG)"/>
+
+    <!-- ======== ROW 2: Cancellation ======== -->
+    <line x1="240" y1="670" x2="300" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="460" y1="670" x2="520" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="680" y1="670" x2="740" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="900" y1="670" x2="960" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="1120" y1="670" x2="1180" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="1340" y1="670" x2="1400" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+    <line x1="1560" y1="670" x2="1620" y2="670" stroke="#F44336" stroke-width="2" marker-end="url(#aR)"/>
+
+    <!-- ======== ROW 3: Rejection ======== -->
+    <line x1="4240" y1="670" x2="4300" y2="670" stroke="#FF9800" stroke-width="2" marker-end="url(#aO)"/>
+    <line x1="4460" y1="670" x2="4520" y2="670" stroke="#FF9800" stroke-width="2" marker-end="url(#aO)"/>
+    <line x1="4680" y1="670" x2="4740" y2="670" stroke="#FF9800" stroke-width="2" marker-end="url(#aO)"/>
+    <line x1="4900" y1="670" x2="4960" y2="670" stroke="#FF9800" stroke-width="2" marker-end="url(#aO)"/>
+
+    <!-- ======== ROW 4: Refund ======== -->
+    <line x1="4240" y1="1010" x2="4300" y2="1010" stroke="#9C27B0" stroke-width="2" marker-end="url(#aP)"/>
+    <line x1="4460" y1="1010" x2="4520" y2="1010" stroke="#9C27B0" stroke-width="2" marker-end="url(#aP)"/>
+    <line x1="4680" y1="1010" x2="4740" y2="1010" stroke="#9C27B0" stroke-width="2" marker-end="url(#aP)"/>
+    <line x1="4900" y1="1010" x2="4960" y2="1010" stroke="#9C27B0" stroke-width="2" marker-end="url(#aP)"/>
+
+    <!-- ======== CQRS feeds ======== -->
+    <path d="M 820,340 L 820,1200 L 160,1200 L 160,1330" fill="none" stroke="#2196F3" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#aB)"/>
+    <path d="M 4740,340 L 4740,1200 L 780,1200 L 780,1330" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#aB)"/>
+    <path d="M 1480,340 L 1480,1220 L 1400,1220 L 1400,1330" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#aB)"/>
+    <path d="M 900,720 L 900,1200 L 780,1200" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4"/>
+    <path d="M 1480,720 L 1480,1220 L 1400,1220" fill="none" stroke="#2196F3" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+    <!-- Read model internal -->
+    <line x1="240" y1="1380" x2="300" y2="1380" stroke="#2196F3" stroke-width="2" marker-end="url(#aB)"/>
+    <line x1="860" y1="1380" x2="920" y2="1380" stroke="#2196F3" stroke-width="2" marker-end="url(#aB)"/>
+    <line x1="1480" y1="1380" x2="1540" y2="1380" stroke="#2196F3" stroke-width="2" marker-end="url(#aB)"/>
+
+  </svg>
+
+  <!-- ========== LOWER SECTION ========== -->
+  <div style="position:relative; margin-top:1440px;">
+
+    <div style="font-size:20px; font-weight:700; color:#1a1a2e; margin:40px 0 16px;">
+      🟡 Ciclos de Vida
+    </div>
+
+    <div style="display:flex; gap:30px; flex-wrap:wrap; margin-bottom:40px;">
+      <div class="lifecycle">
+        <h3>🟡 Reserva</h3>
+        <code>
+          Criada →
+          <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pendente</span>
+          → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Paga</span>
+          → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Reembolsada</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          ├→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Cancelada</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          └→ <span style="background:#FFCCBC;padding:2px 8px;border-radius:4px;font-weight:700;">Rejeitada</span>
+        </code>
+      </div>
+
+      <div class="lifecycle">
+        <h3>🟡 Disponibilidade de Quartos</h3>
+        <code>
+          Criada → (Total = N, Reservados = 0)<br><br>
+          <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;">Reservar</span>
+          → Reservados += X<br>
+          <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;">Liberar</span>
+          → Reservados -= X
+        </code>
+      </div>
+
+      <div class="lifecycle">
+        <h3>🟡 Pagamento</h3>
+        <code>
+          Criado →
+          <span style="background:#FFF9C4;padding:2px 8px;border-radius:4px;font-weight:700;">Pendente</span>
+          → <span style="background:#BBDEFB;padding:2px 8px;border-radius:4px;font-weight:700;">Processando</span>
+          → ┬→ <span style="background:#C8E6C9;padding:2px 8px;border-radius:4px;font-weight:700;">Aprovado</span>
+          → <span style="background:#E1BEE7;padding:2px 8px;border-radius:4px;font-weight:700;">Reembolsado</span><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          └→ <span style="background:#FFCDD2;padding:2px 8px;border-radius:4px;font-weight:700;">Falhou</span>
+        </code>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</body>
+</html>
+
+
